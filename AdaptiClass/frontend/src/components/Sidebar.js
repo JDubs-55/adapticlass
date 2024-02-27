@@ -11,33 +11,28 @@ import {
 import PathConstants from "../routes/pathConstants";
 
 const SidebarContainer = styled.div`
-  width: 18.75%;
-  @media (min-width: 1440px) {
-    width: 270px;
-  }
-
-  background-color: #fff;
-  color: #fff;
-
+  will-change: width;
+  width: ${(props) => (props.collapsed ? "76px" : "270px")};
+  //NOTE: Transition here is causing problems.
+  overflow: hidden;
   border-right: 2px solid #ededed;
-
   display: flex;
   flex-direction: column;
 `;
 
 const SidebarHeader = styled.div`
-  display: block;
+  display: flex;
   height: 66px;
   width: 100%;
-  // background-color: red;
   display: flex;
   align-items: center;
+  padding: 0px;
 
   svg {
-    width: 25px;
-    height: 25px;
-    margin-right: 12px; /* Adjust the margin to control spacing */
-    margin-left: 30px;
+    width: 26px;
+    height: 26px;
+    margin-right: 13px; /* Adjust the margin to control spacing */
+    margin-left: 25px;
   }
 
   h3 {
@@ -51,19 +46,20 @@ const SidebarButton = styled.button`
   height: 56px;
   width: 100%;
 
-  background-color: #fff;
+  background-color: ${(props) => (props.active ? "#f8f8f8" : "#fff")};
   color: #3f434a;
   font-size: 15px;
   border: none;
   cursor: pointer;
   align-items: center;
+  padding: 0px;
 
-  /* Style for the SVG icon */
   svg {
-    width: 16px;
-    height: 16px;
-    margin-right: 16px; /* Adjust the margin to control spacing */
-    margin-left: 24px;
+    width: 20px;
+    height: 20px;
+    margin-left: 28px;
+    margin-right: 16px;
+    fill: #8a9099;
   }
 
   &:hover {
@@ -71,36 +67,35 @@ const SidebarButton = styled.button`
   }
 `;
 
-const Sidebar = () => {
-  
+const Sidebar = ({ collapsed }) => {
   return (
-    <SidebarContainer>
+    <SidebarContainer collapsed={collapsed}>
       <SidebarHeader>
         <RocketIcon />
-        <h3>AdaptiClass</h3>
+        {!collapsed && <h3>AdaptiClass</h3>}
       </SidebarHeader>
       <Link to={PathConstants.HOME}>
-        <SidebarButton>
+        <SidebarButton collapsed={collapsed}>
           <HomeIcon />
-          Home
+          {!collapsed && "Home"}
         </SidebarButton>
       </Link>
       <Link to={PathConstants.COURSES}>
-        <SidebarButton>
+        <SidebarButton collapsed={collapsed}>
           <CoursesIcon />
-          Courses
+          {!collapsed && "Courses"}
         </SidebarButton>
       </Link>
       <Link to={PathConstants.FEEDBACK}>
-        <SidebarButton>
+        <SidebarButton collapsed={collapsed}>
           <FeedbackIcon />
-          Feedback
+          {!collapsed && "Feedback"}
         </SidebarButton>
       </Link>
       <Link to={PathConstants.SETTINGS}>
-        <SidebarButton>
+        <SidebarButton collapsed={collapsed}>
           <SettingsIcon />
-          Settings
+          {!collapsed && "Settings"}
         </SidebarButton>
       </Link>
     </SidebarContainer>

@@ -1,10 +1,10 @@
-import React from 'react';
-import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
-import styled from 'styled-components';
+import React, { useState, useEffect } from "react";
+import { Suspense } from "react";
+import { Outlet } from "react-router-dom";
+import styled from "styled-components";
 
-import Sidebar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
+import Sidebar from "../components/Sidebar";
+import TopBar from "../components/TopBar";
 
 const Container = styled.div`
   display: flex;
@@ -18,19 +18,42 @@ const ContentWrapper = styled.div`
 `;
 
 const MainLayout = () => {
-  // const [collapsed, setCollapsed] = useState(false);
+  //**Collapsable Sidebar**
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // const toggleSidebar = () => {
-  //   setCollapsed(!collapsed);
-  // };
+  //For button in top bar.
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  //For screen size change.
+  const handleResize = () => {
+    // Update the collapsed state based on the screen width
+    setSidebarCollapsed(window.innerWidth <= 1000);
+  };
+
+  //Detect screen size change.
+  useEffect(() => {
+    // Set initial collapsed state on mount
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+  //**End Collapsable Sidebar Functionality**
 
   return (
     <Container>
-      <Sidebar/>
+      <Sidebar collapsed={sidebarCollapsed} />
       <ContentWrapper>
-        <TopBar/>
+        <TopBar toggleSidebar={toggleSidebar} />
         <Suspense fallback={<div>Loading...</div>}>
-          <Outlet/>
+          <Outlet />
         </Suspense>
       </ContentWrapper>
     </Container>
