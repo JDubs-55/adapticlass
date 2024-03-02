@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import {CollapseMenuIcon} from "../assets/Icons";
+import { CollapseMenuIcon } from "../assets/Icons";
+import TopBarUserProfile from "./TopBarUserProfile";
 
 const TopBarWrapper = styled.div`
   width: 100%;
@@ -15,10 +16,10 @@ const TopBarContent = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  
 `;
 
 const CollapseMenuButton = styled.button`
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,12 +34,14 @@ const CollapseMenuButton = styled.button`
   }
 `;
 
-const TopBar = ({toggleSidebar}) => {
+const TopBar = ({ toggleSidebar }) => {
   return (
     <TopBarWrapper>
       <TopBarContent>
-        <CollapseMenuButton onClick={toggleSidebar}><CollapseMenuIcon/></CollapseMenuButton>
-        <h3>Top Bar Content</h3>
+        <CollapseMenuButton onClick={toggleSidebar}>
+          <CollapseMenuIcon />
+        </CollapseMenuButton>
+        <TopBarUserProfile />
       </TopBarContent>
     </TopBarWrapper>
   );
