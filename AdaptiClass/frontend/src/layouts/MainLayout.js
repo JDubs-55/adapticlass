@@ -11,6 +11,7 @@ import { PageLoader } from "../pages/PageLoader";
 const Container = styled.div`
   display: flex;
   height: 100vh;
+  overflow-x: hidden;
 `;
 
 const ContentWrapper = styled.div`
@@ -54,7 +55,7 @@ const MainLayout = () => {
       <Sidebar collapsed={sidebarCollapsed} />
       <ContentWrapper>
         <TopBar toggleSidebar={toggleSidebar} />
-        <Suspense fallback={<PageLoader/>}>
+        <Suspense fallback={<PageLoader />}>
           <Outlet />
         </Suspense>
       </ContentWrapper>
