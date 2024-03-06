@@ -6,9 +6,12 @@ import styled from "styled-components";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 
+import { PageLoader } from "../pages/PageLoader";
+
 const Container = styled.div`
   display: flex;
   height: 100vh;
+  overflow-x: hidden;
 `;
 
 const ContentWrapper = styled.div`
@@ -52,7 +55,7 @@ const MainLayout = () => {
       <Sidebar collapsed={sidebarCollapsed} />
       <ContentWrapper>
         <TopBar toggleSidebar={toggleSidebar} />
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<PageLoader />}>
           <Outlet />
         </Suspense>
       </ContentWrapper>
