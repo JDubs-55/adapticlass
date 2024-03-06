@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FaCheckCircle, FaRegCircle } from '../react-icons/fa'; 
+import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
+
 
 const UpcomingContainer = styled.div`
   width: 634px; 
