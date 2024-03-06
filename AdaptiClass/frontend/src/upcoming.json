@@ -1,0 +1,24 @@
+[
+    {
+      "name": "Assignment 1",
+      "dueDate": "03-10-2024",
+      "completed": true
+    },
+    {
+      "name": "P",
+      "dueDate": "03-15-2024",
+      "completed": false
+    },
+    {
+      "name": "Project",
+      "dueDate": "03-12-2024",
+      "completed": true
+    },
+    {
+      "name": "Proposal",
+      "dueDate": "03-11-2024",
+      "completed": false
+    }
+
+  ]
+  

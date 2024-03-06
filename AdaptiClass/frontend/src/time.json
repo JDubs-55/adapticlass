@@ -1,0 +1,13 @@
+{
+  "currentWeek": [
+  { "day": "Mon", "timeSpent": 60 },
+  { "day": "Tue", "timeSpent": 75 },
+  { "day": "Wed", "timeSpent": 100 },
+  { "day": "Thu", "timeSpent": 45 },
+  { "day": "Fri", "timeSpent": 90 },
+  { "day": "Sat", "timeSpent": 40 },
+  { "day": "Sun", "timeSpent": 85 }
+],
+"lastWeekTotal": 400,
+"currentWeekTotal": 425
+}
