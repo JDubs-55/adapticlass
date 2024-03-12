@@ -26,7 +26,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/axiostest" element={<AxiosExample emailToGet="three@email.com"/>}/>
+      <Route path="/axiostest" element={<AxiosExample emailToGet="one@email.com"/>}/>
       <Route path={PathConstants.HOME} element={<AuthenticationGuard component={MainLayout}/>}>
         <Route path={PathConstants.HOME} element={<HomeContent/>}/>
         <Route path={PathConstants.COURSES} element={<CourseContent/>}/>
