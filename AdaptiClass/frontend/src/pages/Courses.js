@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import { FilterIcon } from "../assets/Icons";
+//import { FilterIcon } from "../assets/Icons";
 import CourseCard from "../components/CourseCard";
 import courseData from "../mockRequests/courses.json";
 
@@ -27,22 +27,22 @@ const PageHeaderLabel = styled.h4`
   font-size: 28px;
 `;
 
-const FilterButton = styled.button`
-  height: 40px;
-  width: 40px;
-  background-color: #fff;
-  border: none;
-  padding: 0;
-  border-radius: 14px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+// const FilterButton = styled.button`
+//   height: 40px;
+//   width: 40px;
+//   background-color: #fff;
+//   border: none;
+//   padding: 0;
+//   border-radius: 14px;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
 
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
+//   svg {
+//     width: 20px;
+//     height: 20px;
+//   }
+// `;
 
 const CourseControls = styled.div`
   width: calc(100% - 36px); /* 18px on both sides */
@@ -161,9 +161,9 @@ const CourseContent = () => {
     <Content>
       <PageHeader>
         <PageHeaderLabel>Courses</PageHeaderLabel>
-        <FilterButton>
+        {/* <FilterButton>
           <FilterIcon />
-        </FilterButton>
+        </FilterButton> */}
       </PageHeader>
       <CourseControls>
         <ControlsButtonContainer>
