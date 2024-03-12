@@ -273,6 +273,7 @@ class RemoveStudentsFromCourseView(APIView):
 
 
 
+<<<<<<< HEAD
 
 #sections and assignments view 
 
@@ -316,3 +317,45 @@ class AssignmentDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+=======
+# Updated views.py
+class SectionListView(APIView):
+    def get(self, request, course_name):
+        # Retrieve sections for the specified course
+        sections = Section.objects.filter(course__name=course_name)
+        serializer = SectionSerializer(sections, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, course_name):
+        # Create a new section under the specified course
+        data = request.data.copy()
+        data['course'] = course_name  # Assign the course name to the section
+        serializer = SectionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+
+class AssignmentListView(APIView):
+    def post(self, request):
+        section_id = request.data.get('section')
+        if not section_id:
+            return Response({"error": "Section ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            section = Section.objects.get(id=section_id)
+        except Section.DoesNotExist:
+            return Response({"error": "Section not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the user making the request is associated with the course as an instructor
+        if request.user.instructor.courses.filter(id=section.course.id).exists():
+            serializer = AssignmentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "You do not have permission to create assignments for this section"}, status=status.HTTP_403_FORBIDDEN)
+>>>>>>> 3e1113e471d135658744227d16ee80c623ee7f0a
