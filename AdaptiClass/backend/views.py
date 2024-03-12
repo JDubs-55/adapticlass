@@ -2,52 +2,73 @@ from django.shortcuts import render
 from django.http import Http404
 from rest_framework import generics
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from . serializers import *
 from . models import *
 
 # Create your views here.
-class StudentListView(APIView):
-    def get(self, request):
-        students = Student.objects.all()
-        serializer = StudentSerializer(students, many=True)
-        return Response(serializer.data)
+# class StudentListView(APIView):
+#     def get(self, request):
+#         students = Student.objects.all()
+#         serializer = StudentSerializer(students, many=True)
+#         return Response(serializer.data)
     
-    def post(self, request):
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     def post(self, request):
+#         serializer = StudentSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class StudentDetailView(APIView):
-    def get_object(self, email):
+# class StudentDetailView(APIView):
+#     def get_object(self, email):
+#         try:
+#             return Student.objects.get(email=email)
+#         except Student.DoesNotExist:
+#             raise Http404("Student does not exist")
+        
+#     def get(self, request, email):
+#         student = self.get_object(email)
+#         serializer = StudentSerializer(student)
+#         return Response(serializer.data)
+    
+#     def put(self, request, email):
+#         student = self.get_object(email)
+#         serializer = StudentSerializer(student, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+        
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+#     def delete(self, request, email):
+#         student = self.get_object(email)
+#         student.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+@api_view(['GET'])
+def student_detail_by_email(request):
+    email = request.query_params.get('email')
+    if email:
         try:
-            return Student.objects.get(email=email)
-        except Student.DoesNotExist:
-            raise Http404("Student does not exist")
-        
-    def get(self, request, email):
-        student = self.get_object(email)
-        serializer = StudentSerializer(student)
-        return Response(serializer.data)
-    
-    def put(self, request, email):
-        student = self.get_object(email)
-        serializer = StudentSerializer(student, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+            student = Student.objects.get(email=email)
+            serializer = StudentSerializer(student)
             return Response(serializer.data)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, email):
-        student = self.get_object(email)
-        student.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
+        except Student.DoesNotExist:
+            return Response({"error": "Student not found"}, status=404)
+    else:
+        return Response({"error": "Email parameter missing"}, status=400)
+
+class StudentListView(generics.ListCreateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+
+class StudentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = 'id'      
 
 class InstructorListView(APIView):
     def get(self, request):
