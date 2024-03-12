@@ -5,9 +5,8 @@ import CourseCard from "../components/CourseCard";
 import courseData from "../mockRequests/courses.json";
 
 const Content = styled.div`
-  width: 100%;
-  flex-grow: 1;
-  background-color: #f8f8f8;
+  width: calc(100% - 36px); /* 18px on both sides */
+  margin: 0 18px; /* 18px on both sides */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -15,8 +14,7 @@ const Content = styled.div`
 `;
 
 const PageHeader = styled.div`
-  width: calc(100% - 36px); /* 18px on both sides */
-  margin: 0 18px; /* 18px on both sides */
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -45,8 +43,7 @@ const PageHeaderLabel = styled.h4`
 // `;
 
 const CourseControls = styled.div`
-  width: calc(100% - 36px); /* 18px on both sides */
-  margin: 0 18px; /* 18px on both sides */
+  width: 100%;
   box-sizing: border-box; /* Include padding and border in the total width */
 
   display: flex;
@@ -108,8 +105,9 @@ const HorizontalSeparator = styled.div`
 `;
 
 const CoursesCardContainer = styled.div`
-  width: calc(100% - 36px); /* 18px on both sides */
-  margin: 0 18px; /* 18px on both sides */
+  flex: 1;
+  width: 100%;
+  max-height: calc(100vh - 250px);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
@@ -117,7 +115,6 @@ const CoursesCardContainer = styled.div`
   gap: 18px;
   margin-top: 18px;
   overflow-y: auto;
-  max-height: 594px;
 `;
 
 const CourseContent = () => {
