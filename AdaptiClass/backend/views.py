@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from . serializers import *
 from . models import *
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 class StudentListView(APIView):
@@ -110,6 +111,28 @@ class CourseListView(APIView):
                 return Response({"error": "Instructor not found"}, status=status.HTTP_404_NOT_FOUND)
 
             serializer.save(name=name,instructor=instructor)
+
+
+            # Handle sections
+            if 'sections' in request.data:
+                sections_data = request.data['sections']
+                section_serializer = SectionSerializer(data=sections_data, many=True)
+                
+                try:
+                    if section_serializer.is_valid():
+                        # Save the sections associated with the course
+                        sections = section_serializer.save(course=serializer.instance)
+                        # Associate the saved sections with the course
+                        serializer.instance.sections.set(sections)
+                    else:
+                        return Response(section_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,7 +173,28 @@ class CourseDetailView(APIView):
                     except Student.DoesNotExist:
                         return Response({"error": f"Student '{student_email}' not found"}, status=status.HTTP_404_NOT_FOUND)
                     course.students.add(student)
+
+            # Handle sections
+            if 'sections' in request.data:
+                sections_data = request.data['sections']
+                for section_data in sections_data:
+                    # Remove the 'course' field from each section data
+                    if 'course' in section_data:
+                        del section_data['course']
+                section_serializer = SectionSerializer(data=sections_data, many=True)
+                if section_serializer.is_valid():
+                    sections = section_serializer.save(course=course)
+                    serializer.instance.sections.set(sections)
+                else:
+                    return Response(section_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
             serializer.save()
+
+        
+
+                        
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -224,3 +268,51 @@ class RemoveStudentsFromCourseView(APIView):
         }
 
         return Response(message, status=status.HTTP_200_OK)
+    
+
+
+
+
+
+#sections and assignments view 
+
+
+class SectionDetailView(APIView):
+    def get_object(self, course_id, section_id):
+        try:
+            return Section.objects.get(course_id=course_id, id=section_id)
+        except Section.DoesNotExist:
+            raise Http404("Section does not exist")
+
+    def get(self, request, course_id, section_id):
+        section = self.get_object(course_id, section_id)
+        serializer = SectionSerializer(section)
+        return Response(serializer.data)
+
+    def put(self, request, course_id, section_id):
+        section = self.get_object(course_id, section_id)
+        serializer = SectionSerializer(section, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AssignmentDetailView(APIView):
+    def get_object(self, section_id, assignment_id):
+        try:
+            return Assignment.objects.get(section_id=section_id, id=assignment_id)
+        except Assignment.DoesNotExist:
+            raise Http404("Assignment does not exist")
+
+    def get(self, request, section_id, assignment_id):
+        assignment = self.get_object(section_id, assignment_id)
+        serializer = AssignmentSerializer(assignment)
+        return Response(serializer.data)
+
+    def put(self, request, section_id, assignment_id):
+        assignment = self.get_object(section_id, assignment_id)
+        serializer = AssignmentSerializer(assignment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
