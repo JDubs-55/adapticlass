@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import CourseCardProgressBar from "./CourseCardProgressBar";
 
 const CourseCardWrapper = styled.div`
   width: 302px;
@@ -75,6 +76,7 @@ const CourseCard = ({data}) => {
         </CourseInformationLabelContainer>
       </CourseInformationContainer>
       <CourseDescription>{data.description}</CourseDescription>
+      <CourseCardProgressBar label="Average Grade" percentage={data.grade}></CourseCardProgressBar>
     </CourseCardWrapper>
   );
 };
