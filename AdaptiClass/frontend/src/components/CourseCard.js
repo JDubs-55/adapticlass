@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import CourseCardProgressBar from "./CourseCardProgressBar";
+import { Link } from "react-router-dom";
 
 const CourseCardWrapper = styled.div`
   width: 302px;
@@ -65,6 +66,7 @@ const CourseDescription = styled.body`
 
 const CourseCard = ({data}) => {
   return (
+    <Link to={`/courses/${data.id}`}>
     <CourseCardWrapper>
       <CourseInformationContainer>
         <CourseImageContainer>
@@ -78,6 +80,7 @@ const CourseCard = ({data}) => {
       <CourseDescription>{data.description}</CourseDescription>
       <CourseCardProgressBar label="Average Grade" percentage={data.grade}></CourseCardProgressBar>
     </CourseCardWrapper>
+    </Link>
   );
 };
 

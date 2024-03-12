@@ -6,6 +6,7 @@ const PathConstants = {
     FEEDBACK: "/feedback",
     SETTINGS: "/settings",
     CALLBACK: "/callback",
+    ERROR: "*",
 }
 
 export default PathConstants

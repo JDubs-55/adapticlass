@@ -7,6 +7,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { AppLoader } from './pages/AppLoader';
 import { AuthenticationGuard } from './authentication/AuthenticationGuard';
 import PathConstants from './routes/pathConstants';
+import { FailedToLoadPage } from './pages/FailedToLoad';
 
 const HomeContent = React.lazy(() => import("./pages/Home"))
 const CourseContent = React.lazy(() => import("./pages/Courses"))
@@ -30,6 +31,7 @@ function App() {
         <Route path={PathConstants.COURSES} element={<CourseContent/>}/>
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent/>}/>
         <Route path={PathConstants.SETTINGS} element={<SettingsContent/>}/>
+        <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
         {/* Debug Routes for testing individual components */}
         {/* <Route path={"/testpageloader"} element={<PageLoader/>}/> */}
       </Route>
