@@ -1,22 +1,41 @@
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import axios from 'axios';
 
-const getStudentByEmail = async (email) => {
-    try {
-        const response = await axios.get(`http://localhost:3001/students/`, {
-            params: {
-                email: email,
-            }
-        });
-        return response.data;
-    } catch (error) {
-        // Handle error
-        console.error('Error fetching student by email:', error);
-        throw error;
-    }
+const Container = styled.div`
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`
+
+const AxiosExample = ({emailToGet}) => {
+    const [studentData, setStudentData] = useState({});
+    
+    useEffect(() => {
+        try {
+            const response = axios.get(`http://127.0.0.1:8000/students/`, {
+                params: {
+                    email: emailToGet,
+                }
+            });
+            
+            console.log(response);
+            setStudentData(response.data);
+        } catch (error) {
+            // Handle error
+            console.error('Error fetching student by email:', error);
+            throw error;
+        }
+    }, [studentData]);
+    
+    return (
+        <Container>
+            Test
+        </Container>
+    );
+
 };
 
-// Usage
-const email = 'one@email.com'; // Replace with actual email
-getStudentByEmail(email)
-    .then(student => console.log('Student:', student))
-    .catch(error => console.error('Error:', error));
+export default AxiosExample;

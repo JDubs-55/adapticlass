@@ -7,6 +7,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { AppLoader } from './pages/AppLoader';
 import { AuthenticationGuard } from './authentication/AuthenticationGuard';
 import PathConstants from './routes/pathConstants';
+import AxiosExample from './components/Axios';
 
 const HomeContent = React.lazy(() => import("./pages/Home"))
 const CourseContent = React.lazy(() => import("./pages/Courses"))
@@ -25,6 +26,7 @@ function App() {
 
   return (
     <Routes>
+      <Route path="/axiostest" element={<AxiosExample emailToGet="three@email.com"/>}/>
       <Route path={PathConstants.HOME} element={<AuthenticationGuard component={MainLayout}/>}>
         <Route path={PathConstants.HOME} element={<HomeContent/>}/>
         <Route path={PathConstants.COURSES} element={<CourseContent/>}/>
