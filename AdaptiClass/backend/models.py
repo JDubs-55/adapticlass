@@ -18,12 +18,16 @@ class Student(models.Model):
     name = models.CharField(max_length=50, null=False)
     email = models.CharField(max_length=50, unique=True, null=False)
 
+   
+
     def __str__(self):
         return self.email
 
 class Instructor(models.Model):
     name = models.CharField(max_length=50, null=False)
     email = models.CharField(max_length=50, unique=True, null=False)
+
+   
 
     def __str__(self):
         return self.email
@@ -67,3 +71,23 @@ class Grade(models.Model):
 
     def __str__(self):
         return self.letterGrade
+
+
+
+
+
+class Section(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
+    name = models.CharField(max_length=50)
+    details = models.TextField()
+
+    def __str__(self):
+        return f"Section {self.name} - {self.course.name}"
+
+class Assignment(models.Model):
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='assignments')
+    name = models.CharField(max_length=50)
+    details = models.TextField()
+
+    def __str__(self):
+        return f"Assignment {self.name} - {self.section.course.name}"
