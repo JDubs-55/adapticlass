@@ -203,11 +203,7 @@ class CourseListView(APIView):
                         return Response(section_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 except Exception as e:
                     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
+                
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -260,13 +256,9 @@ class CourseDetailView(APIView):
                 else:
                     return Response(section_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
             serializer.save()
-
-        
-
-                        
+            
+            #May be an issue here
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
