@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { RocketIcon } from '../assets/Icons';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { RocketIcon } from "../assets/Icons";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from 'axios';
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const PageWrapper = styled.div`
-    height: 100vh;
-    max-height: 100vh;
-    width: 100%;
-    background-color: #304FFD;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100%;
+  background-color: #304ffd;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Container = styled.div`
@@ -24,18 +25,18 @@ const Container = styled.div`
 `;
 
 const AppNameContainer = styled.div`
-    width: 100%;
+  width: 100%;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
 
-    svg {
-        width: 40px;
-        height: auto;
-    }
-`
+  svg {
+    width: 40px;
+    height: auto;
+  }
+`;
 
 const AppName = styled.h1`
   margin-top: 10px;
@@ -43,8 +44,8 @@ const AppName = styled.h1`
 `;
 
 const FormTitle = styled.h3`
-    width: 100%;
-    text-align: center;
+  width: 100%;
+  text-align: center;
 `;
 
 const Form = styled.form`
@@ -54,7 +55,7 @@ const Form = styled.form`
 
 const Label = styled.label`
   margin-bottom: 10px;
-  color: #8A9099;
+  color: #8a9099;
   font-size: 14px;
 `;
 
@@ -63,24 +64,16 @@ const Input = styled.input`
   padding: 8px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  color: #3F434A;
-`;
-
-const Select = styled.select`
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  color: #3f434a;
 `;
 
 const RoleButtonContainer = styled.div`
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 `;
 
 const RoleButton = styled.button`
@@ -88,9 +81,10 @@ const RoleButton = styled.button`
   margin-bottom: 10px;
   padding: 10px;
   border-radius: 50px;
-  border: ${(props)=>(props.selected ? '1px solid #304FFD' : '1px solid #8A9099')};
-  background-color: ${(props) => (props.selected ? '#304FFD' : '#fff')};
-  color: ${(props) => (props.selected ? '#fff' : '#8A9099')};
+  border: ${(props) =>
+    props.selected ? "1px solid #304FFD" : "1px solid #8A9099"};
+  background-color: ${(props) => (props.selected ? "#304FFD" : "#fff")};
+  color: ${(props) => (props.selected ? "#fff" : "#8A9099")};
   font-size: 15px;
   font-family: Poppins;
   cursor: pointer;
@@ -100,7 +94,7 @@ const Button = styled.button`
   padding: 10px 20px;
   border-radius: 50px;
   border: none;
-  background-color: #304FFD;
+  background-color: #304ffd;
   color: #fff;
   font-size: 15px;
   font-family: Poppins;
@@ -110,71 +104,71 @@ const Button = styled.button`
 const NewUserDetailsForm = () => {
   const { user } = useAuth0();
   const [displayName, setDisplayName] = useState(user.name);
-  const [role, setRole] = useState('student');
+  const [role, setRole] = useState("student");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const data = {
-        auth_id: user.sub,
-        email: user.email, 
-        email_verified: user.email_verified,
-        auth0_name: user.name,
-        display_name: displayName,
-        picture: user.picture,
-        role: role,
-    }
-
-    //DEBUG
-    console.log(data);
+      auth_id: user.sub,
+      email: user.email,
+      email_verified: user.email_verified,
+      auth0_name: user.name,
+      display_name: displayName,
+      picture: user.picture,
+      role: role,
+    };
 
     //SEND TO SERVER
-    axios.post('http://localhost:3001/adduser', data)
-    .then(response => {
-        console.log('Data sent successfully:', response.data);
+    await axios
+      .post("http://127.0.0.1:8000/users/", data)
+      .then((response) => {
+
+        navigate('/');
         // Handle response if needed
-    })
-    .catch(error => {
-        console.error('Error sending data:', error);
+      })
+      .catch((error) => {
+        console.error("Error sending data:", error);
         // Handle error if needed
-    });
+      });
   };
 
   return (
     <PageWrapper>
-    <Container>
-      <AppNameContainer>
-        <RocketIcon/>
-        <AppName>AdaptiClass</AppName>
-      </AppNameContainer>
-      <FormTitle>Update Your User Profile</FormTitle>
-      <Form onSubmit={handleSubmit}>
-        <Label>Change Display Name</Label>
-        <Input
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-        />
-        <Label>Select A Role</Label>
-        <RoleButtonContainer>
-          <RoleButton
-            type="button"
-            selected={role === 'student'}
-            onClick={() => setRole('student')}
-          >
-            Student
-          </RoleButton>
-          <RoleButton
-            type="button"
-            selected={role === 'instructor'}
-            onClick={() => setRole('instructor')}
-          >
-            Instructor
-          </RoleButton>
-        </RoleButtonContainer>
-        <Button type="submit">Submit</Button>
-      </Form>
-    </Container>
+      <Container>
+        <AppNameContainer>
+          <RocketIcon />
+          <AppName>AdaptiClass</AppName>
+        </AppNameContainer>
+        <FormTitle>Update Your User Profile</FormTitle>
+        <Form onSubmit={handleSubmit}>
+          <Label>Change Display Name</Label>
+          <Input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+          <Label>Select A Role</Label>
+          <RoleButtonContainer>
+            <RoleButton
+              type="button"
+              selected={role === "student"}
+              onClick={() => setRole("student")}
+            >
+              Student
+            </RoleButton>
+            <RoleButton
+              type="button"
+              selected={role === "instructor"}
+              onClick={() => setRole("instructor")}
+            >
+              Instructor
+            </RoleButton>
+          </RoleButtonContainer>
+          <Button type="submit">Submit</Button>
+        </Form>
+      </Container>
     </PageWrapper>
   );
 };
