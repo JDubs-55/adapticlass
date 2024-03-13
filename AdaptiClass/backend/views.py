@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import Http404
 from rest_framework import generics
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from . serializers import *
@@ -9,12 +10,80 @@ from . models import *
 from django.shortcuts import get_object_or_404
 
 # Create your views here.
+class UserListView(APIView):
+    # Really for Debugging, not really needed for the app at this point. 
+    # Will need something like this in the future, but will need to filter on role="student"
+    # But its probably easier to just get that from the course. 
+    def get(self, request):
+        users = User.objects.filter()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+ 
+    def post(self, request):
+        data = {
+            "auth_id": request.data.get("auth_id"),
+            "email": request.data.get("email"), 
+            "email_verified": request.data.get("email_verified"),
+            "auth0_name": request.data.get("auth0_name"),
+            "display_name": request.data.get("display_name"),
+            "picture": request.data.get("picture"),
+            "role": request.data.get("role"),
+        }
+        
+        serializer = UserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserDetailView(APIView):
+
+    def get_object(self, user_id):
+        try:
+            return User.objects.get(auth_id = user_id)
+        except User.DoesNotExist:
+            return None
+        
+    #Get request 200 found, 404 not found
+    def get(self, request, user_id):
+        user_instance = self.get_object(user_id)
+        
+        if not user_instance:
+            return Response(
+                {"res": "Object with that user_id does not exists"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = UserSerializer(user_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    #Post request 201 created, 400 data invalid
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 class StudentListView(APIView):
     def get(self, request):
-        students = Student.objects.all()
-        serializer = StudentSerializer(students, many=True)
-        return Response(serializer.data)
-    
+        email = request.query_params.get('email')
+        if email:
+            try:
+                student = Student.objects.get(email=email)
+                serializer = StudentSerializer(student)
+                # return Response(serializer.data)
+                return redirect('student_detail_view', pk=student.pk)
+            except Student.DoesNotExist:
+                return Response({"error": "Student not found"}, status=404)   
+        else:                     
+            students = Student.objects.all()
+            serializer = StudentSerializer(students, many=True)
+            return Response(serializer.data)
+ 
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
@@ -24,38 +93,41 @@ class StudentListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class StudentDetailView(APIView):
-    def get_object(self, email):
-        try:
-            return Student.objects.get(email=email)
-        except Student.DoesNotExist:
-            raise Http404("Student does not exist")
-        
-    def get(self, request, email):
-        student = self.get_object(email)
+    def get(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
         serializer = StudentSerializer(student)
         return Response(serializer.data)
-    
-    def put(self, request, email):
-        student = self.get_object(email)
+
+    def put(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
         serializer = StudentSerializer(student, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        
+            return redirect('student_detail_view', pk=pk)  # Redirect to GET view of the same student
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, email):
-        student = self.get_object(email)
+
+    def delete(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
         student.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
+        return Response({"message": f"Student '{student.email}' deleted"}, status=status.HTTP_204_NO_CONTENT)
+
 
 class InstructorListView(APIView):
     def get(self, request):
-        instructor = Instructor.objects.all()
-        serializer = InstructorSerializer(instructor, many=True)
-        return Response(serializer.data)
-    
+        email = request.query_params.get('email')
+        if email:
+            try:
+                instructor = Instructor.objects.get(email=email)
+                serializer = InstructorSerializer(instructor)
+                # return Response(serializer.data)
+                return redirect('instructor_detail_view', pk=instructor.pk)
+            except Instructor.DoesNotExist:
+                return Response({"error": "Instructor not found"}, status=404)   
+        else:                     
+            instructors = Instructor.objects.all()
+            serializer = InstructorSerializer(instructors, many=True)
+            return Response(serializer.data)
+ 
     def post(self, request):
         serializer = InstructorSerializer(data=request.data)
         if serializer.is_valid():
@@ -65,37 +137,40 @@ class InstructorListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class InstructorDetailView(APIView):
-    def get_object(self, email):
-        try:
-            return Instructor.objects.get(email=email)
-        except Instructor.DoesNotExist:
-            raise Http404("Instructor does not exist")
-        
-    def get(self, request, email):
-        instructor = self.get_object(email)
+    def get(self, request, pk):
+        instructor = get_object_or_404(Instructor, pk=pk)
         serializer = InstructorSerializer(instructor)
         return Response(serializer.data)
-    
-    def put(self, request, email):
-        instructor = self.get_object(email)
+
+    def put(self, request, pk):
+        instructor = get_object_or_404(Instructor, pk=pk)
         serializer = InstructorSerializer(instructor, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        
+            return redirect('instructor_detail_view', pk=pk)  # Redirect to GET view of the same instructor
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, email):
-        instructor = self.get_object(email)
+
+    def delete(self, request, pk):
+        instructor = get_object_or_404(Instructor, pk=pk)
         instructor.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": f"Instructor '{instructor.email}' deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class CourseListView(APIView):
     def get(self, request):
-        courses = Course.objects.all()
-        serializer = CourseSerializer(courses, many=True)
-        return Response(serializer.data)
+        name = request.query_params.get('name')
+        if name:
+            try:
+                course = Course.objects.get(name=name)
+                serializer = InstructorSerializer(course)
+                # return Response(serializer.data)
+                return redirect('course_detail_view', pk=course.pk)
+            except Instructor.DoesNotExist:
+                return Response({"error": "Instructor not found"}, status=404)   
+        else:                     
+            courses = Course.objects.all()
+            serializer = CourseSerializer(courses, many=True)
+            return Response(serializer.data)
 
     def post(self, request):
         serializer = CourseSerializer(data=request.data)
@@ -136,23 +211,20 @@ class CourseListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class CourseDetailView(APIView):
-    def get_object(self, name):
-        try:
-            return Course.objects.get(name=name)
-        except Course.DoesNotExist:
-            raise Http404("Course does not exist")
-
-    def get(self, request, name):
-        course = self.get_object(name)
+class CourseDetailView(APIView): 
+    def get(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
         serializer = CourseSerializer(course)
         return Response(serializer.data)
-
-
-    def put(self, request, name):
-        course = self.get_object(name)
+    
+    def put(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
         serializer = CourseSerializer(course, data=request.data)
         if serializer.is_valid():
+            new_name = request.data.get('name')
+            if new_name:
+                course.name = new_name
+
             # Check if 'instructor' field is present in the request data
             if 'instructor' in request.data:
                 instructor_email = request.data['instructor']
@@ -198,45 +270,31 @@ class CourseDetailView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, name):
-        course = self.get_object(name)
+    def delete(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
         course.delete()
-        return Response({"message": f"Course '{name}' deleted"}, status=status.HTTP_204_NO_CONTENT)
-
-# class AddStudentToCourseView(APIView):
-#     def put(self, request, name):
-#         try:
-#             course = Course.objects.get(name=name)
-#         except Course.DoesNotExist:
-#             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
-
-#         email = request.data.get('email', None)
-#         if not email:
-#             return Response({"error": "Email of the student to be added is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         try:
-#             student = Student.objects.get(email=email)
-#         except Student.DoesNotExist:
-#             return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
-
-#         course.students.add(student)
-#         return Response({"message": f"Student '{email}' added to course '{name}'"}, status=status.HTTP_200_OK)
+        return Response({"message": f"Course '{course.name}' deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 class RemoveStudentsFromCourseView(APIView):
-    def get_object(self, name):
-        try:
-            return Course.objects.get(name=name)
-        except Course.DoesNotExist:
-            raise Http404("Course does not exist")
+    # def get_object(self, name):
+    #     try:
+    #         return Course.objects.get(name=name)
+    #     except Course.DoesNotExist:
+    #         raise Http404("Course does not exist")
         
-    def get(self, request, name):
-        course = self.get_object(name)
+    # def get(self, request, name):
+    #     course = self.get_object(name)
+    #     serializer = CourseSerializer(course)
+    #     return Response(serializer.data)
+    
+    def get(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
         serializer = CourseSerializer(course)
         return Response(serializer.data)
 
-    def put(self, request, name):
+    def put(self, request, pk):
         try:
-            course = Course.objects.get(name=name)
+            course = Course.objects.get(pk=pk)
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -257,7 +315,7 @@ class RemoveStudentsFromCourseView(APIView):
             try:
                 student = Student.objects.get(email=email)
                 course.students.remove(student)
-                remove_messages.append(f"Student '{email}' removed from course '{name}'")
+                remove_messages.append(f"Student '{email}' removed from course '{course.name}'")
             except Student.DoesNotExist:
                 error_messages.append(f"Student '{email}' not found")
 
@@ -269,11 +327,6 @@ class RemoveStudentsFromCourseView(APIView):
 
         return Response(message, status=status.HTTP_200_OK)
     
-
-
-
-
-<<<<<<< HEAD
 
 #sections and assignments view 
 
@@ -317,7 +370,7 @@ class AssignmentDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-=======
+
 # Updated views.py
 class SectionListView(APIView):
     def get(self, request, course_name):
@@ -358,4 +411,4 @@ class AssignmentListView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "You do not have permission to create assignments for this section"}, status=status.HTTP_403_FORBIDDEN)
->>>>>>> 3e1113e471d135658744227d16ee80c623ee7f0a
+
