@@ -2,6 +2,18 @@ from django.db import models
 from decimal import *
 
 # Create your models here.
+class User(models.Model):
+    auth_id = models.CharField(max_length=100, unique=True, null=False)
+    email = models.CharField(max_length=50, unique=True, null=False)
+    email_verified = models.BooleanField(default=False, null=False)
+    auth0_name = models.CharField(max_length=50, null=False)
+    display_name = models.CharField(max_length=50, null=False)
+    picture = models.URLField(max_length=300)
+    role = models.CharField(max_length=20)
+    
+    def __str__(self):
+        return self.auth_id + " : " + self.email
+    
 class Student(models.Model):
     name = models.CharField(max_length=50, null=False)
     email = models.CharField(max_length=50, unique=True, null=False)
@@ -18,6 +30,9 @@ class Instructor(models.Model):
 
 class Course(models.Model):
     name = models.CharField(max_length=50, null=False)
+    
+    # You can just use User for the students and instructors
+    # Just validate their roles when adding a user as a student or instructor. 
     students = models.ManyToManyField(Student)
     instructor = models.ForeignKey('Instructor', on_delete=models.CASCADE)
 

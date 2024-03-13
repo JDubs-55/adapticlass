@@ -9,6 +9,64 @@ from . serializers import *
 from . models import *
 
 # Create your views here.
+class UserListView(APIView):
+    # Really for Debugging, not really needed for the app at this point. 
+    # Will need something like this in the future, but will need to filter on role="student"
+    # But its probably easier to just get that from the course. 
+    def get(self, request):
+        users = User.objects.filter()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+ 
+    def post(self, request):
+        data = {
+            "auth_id": request.data.get("auth_id"),
+            "email": request.data.get("email"), 
+            "email_verified": request.data.get("email_verified"),
+            "auth0_name": request.data.get("auth0_name"),
+            "display_name": request.data.get("display_name"),
+            "picture": request.data.get("picture"),
+            "role": request.data.get("role"),
+        }
+        
+        serializer = UserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserDetailView(APIView):
+
+    def get_object(self, user_id):
+        try:
+            return User.objects.get(auth_id = user_id)
+        except User.DoesNotExist:
+            return None
+        
+    #Get request 200 found, 404 not found
+    def get(self, request, user_id):
+        user_instance = self.get_object(user_id)
+        
+        if not user_instance:
+            return Response(
+                {"res": "Object with that user_id does not exists"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = UserSerializer(user_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    #Post request 201 created, 400 data invalid
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 class StudentListView(APIView):
     def get(self, request):
         email = request.query_params.get('email')

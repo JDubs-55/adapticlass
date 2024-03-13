@@ -9,4 +9,6 @@ urlpatterns = [
     path('courses/', CourseListView.as_view()),
     path('courses/<int:pk>/', CourseDetailView.as_view(), name='course_detail_view'),
     path('courses/<int:pk>/removestudents/', RemoveStudentsFromCourseView.as_view()),
+    path('users/', UserListView.as_view()), #Retrieve List of user or post new user
+    path('users/<str:user_id>/', UserDetailView.as_view()), #Retrieve user info by id, 200 success/404 not_found
 ]
