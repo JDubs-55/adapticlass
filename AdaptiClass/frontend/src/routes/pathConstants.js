@@ -1,7 +1,7 @@
 
 
 const PathConstants = {
-    HOME: "home",
+    HOME: "",
     COURSES: "courses",
     FEEDBACK: "feedback",
     SETTINGS: "settings",
