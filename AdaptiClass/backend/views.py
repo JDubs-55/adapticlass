@@ -328,11 +328,6 @@ class RemoveStudentsFromCourseView(APIView):
         return Response(message, status=status.HTTP_200_OK)
     
 
-
-
-
-<<<<<<< HEAD
-
 #sections and assignments view 
 
 
@@ -375,7 +370,7 @@ class AssignmentDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-=======
+
 # Updated views.py
 class SectionListView(APIView):
     def get(self, request, course_name):
@@ -416,4 +411,4 @@ class AssignmentListView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "You do not have permission to create assignments for this section"}, status=status.HTTP_403_FORBIDDEN)
->>>>>>> 3e1113e471d135658744227d16ee80c623ee7f0a
+
