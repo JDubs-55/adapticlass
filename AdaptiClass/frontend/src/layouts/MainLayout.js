@@ -11,13 +11,17 @@ import { PageLoader } from "../pages/PageLoader";
 const Container = styled.div`
   display: flex;
   height: 100vh;
+  max-height: 100vh;
   overflow-x: hidden;
 `;
 
 const ContentWrapper = styled.div`
+  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   flex: 1;
+  background-color: #f8f8f8;
 `;
 
 const MainLayout = () => {
