@@ -11,7 +11,7 @@ const Container = styled.div`
 `;
 
 const ColumnWrapper = styled.div`
-  width: ${(props) => (props.showInfoPane ? "60%" : "100%")};
+  width: ${(props) => (props.$showInfoPane ? "60%" : "100%")};
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -49,15 +49,15 @@ const ListContainer = styled.div`
 
 const InfoPaneContainer = styled.div`
   width: ${(props) =>
-    props.showInfoPane
+    props.$showInfoPane
       ? "40%"
       : "0"}; /* Adjust width based on info pane visibility */
   min-width: ${(props) =>
-    props.showInfoPane
+    props.$showInfoPane
         ? "500px"
         : "0"}; /* Adjust width based on info pane visibility */
   display: ${(props) =>
-    props.showInfoPane
+    props.$showInfoPane
       ? "block"
       : "none"}; /* Show/hide based on info pane visibility */
   border-left: 2px solid #ededed;
@@ -89,7 +89,7 @@ const AssignmentPage = () => {
 
   return (
     <Container>
-      <ColumnWrapper>
+      <ColumnWrapper $showInfoPane={showInfoPane}>
         <PageHeader>
           <h5>{jsonData ? jsonData["title"] : ""}</h5>
         </PageHeader>
@@ -114,7 +114,7 @@ const AssignmentPage = () => {
           />
         </ListContainer>
       </ColumnWrapper>
-      <InfoPaneContainer showInfoPane={showInfoPane}>
+      <InfoPaneContainer $showInfoPane={showInfoPane}>
         <AssignmentInfoPane
           toggleOffInfoPane={toggleOffInfoPane}
           data={infoPaneData}
