@@ -1,19 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import Questions from '../components/Questions';
+import ProgressBar from '../components/ProgressBar';
+import ChatBox from '../components/Chatbox';
+import assignments from '../assignments.json'; 
 
-const Content = styled.div`
-  width: 100%;
-  flex: 1;
-  padding: 20px;
+const MainLayout = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin: 20px;
+  gap: 20px;
 `;
 
-const CourseContent = () => {
-    return (
-        <Content>
-            <h1>Courses Page</h1>
-            <p>This is where course components go</p>
-        </Content>
-    );
+const Courses = () => {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const totalQuestions = assignments.length;
+  const [quizCompleted, setQuizCompleted] = useState(false);
+
+
+  return (
+    <MainLayout>
+      <div>
+      <Questions 
+        updateCurrentIndex={setCurrentQuestionIndex} 
+        totalQuestions={totalQuestions}
+        setQuizCompleted={setQuizCompleted} 
+      />
+
+      <ProgressBar current={currentQuestionIndex + 1} total={totalQuestions} quizCompleted={quizCompleted} />
+      </div>
+      <ChatBox/>
+    </MainLayout>
+  );
 };
 
-export default CourseContent;
+export default Courses;
