@@ -1,5 +1,5 @@
 import React from "react";
-import styled, { keyframes }from "styled-components";
+import styled from "styled-components";
 import { RocketIcon } from "../assets/Icons";
 
 const LoadingPageWrapper = styled.div`
@@ -28,11 +28,6 @@ const CenterContainer = styled.div`
 const AppName = styled.h1`
   margin-top: 10px;
   font-size: 24px;
-`;
-
-const rotate = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 `;
 
 const Message = styled.body`
