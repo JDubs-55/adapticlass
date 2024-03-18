@@ -12,7 +12,7 @@ const ProfileSectionWrapper = styled.div`
   margin: 5px;
   padding: 6px 10px;
   border-radius: 14px;
-  background-color: ${({ show }) => (show ? "#f8f8f8" : "#fff")};
+  background-color: ${(props) => (props.$show ? "#f8f8f8" : "#fff")};
 `;
 
 const ProfileSectionContainer = styled.div`
@@ -49,7 +49,7 @@ const Username = styled.body`
 `;
 
 const DropdownContent = styled.div`
-  display: ${({ show }) => (show ? "block" : "none")};
+  display: ${(props) => (props.$show ? "block" : "none")};
   position: absolute;
   top: 105%; /* Position below the header */
   right: 0;
@@ -98,13 +98,13 @@ const TopBarUserProfile = () => {
 
   return (
     <ProfileSectionContainer>
-      <ProfileSectionWrapper show={showDropdown}>
+      <ProfileSectionWrapper $show={showDropdown}>
         <ProfileHeader onClick={toggleDropdown} id="dropdown-trigger">
           <img src={user.picture} alt="Profile" />
           <Username>{user.name}</Username>
           <DownArrowIcon />
         </ProfileHeader>
-        <DropdownContent show={showDropdown} ref={dropdownRef}>
+        <DropdownContent $show={showDropdown} ref={dropdownRef}>
           <UserProfileDropdown
             image={user.picture}
             name={user.name}

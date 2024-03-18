@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import {
@@ -12,7 +12,7 @@ import PathConstants from "../routes/pathConstants";
 
 const SidebarContainer = styled.div`
   will-change: width;
-  width: ${(props) => (props.collapsed ? "76px" : "270px")};
+  width: ${(props) => (props.$collapsed ? "76px" : "270px")};
   //NOTE: Transition here is causing problems.
   overflow: hidden;
   border-right: 2px solid #ededed;
@@ -46,7 +46,7 @@ const SidebarButton = styled.button`
   height: 56px;
   width: 100%;
 
-  background-color: ${(props) => (props.active ? "#f8f8f8" : "#fff")};
+  background-color: ${(props) => (props.$active ? "#f8f8f8" : "#fff")};
   color: #3f434a;
   font-size: 15px;
   border: none;
@@ -68,32 +68,34 @@ const SidebarButton = styled.button`
 `;
 
 const Sidebar = ({ collapsed }) => {
+  const [activeButton, setActiveButton] = useState(0);
+
   return (
-    <SidebarContainer collapsed={collapsed}>
+    <SidebarContainer $collapsed={collapsed}>
       <SidebarHeader>
         <RocketIcon />
         {!collapsed && <h3>AdaptiClass</h3>}
       </SidebarHeader>
       <Link to={PathConstants.HOME}>
-        <SidebarButton collapsed={collapsed}>
+        <SidebarButton $active={activeButton === 0} onClick={() => setActiveButton(0)}>
           <HomeIcon />
           {!collapsed && "Home"}
         </SidebarButton>
       </Link>
       <Link to={PathConstants.COURSES}>
-        <SidebarButton collapsed={collapsed}>
+        <SidebarButton $active={activeButton === 1} onClick={() => setActiveButton(1)}>
           <CoursesIcon />
           {!collapsed && "Courses"}
         </SidebarButton>
       </Link>
       <Link to={PathConstants.FEEDBACK}>
-        <SidebarButton collapsed={collapsed}>
+        <SidebarButton $active={activeButton === 2} onClick={() => setActiveButton(2)}>
           <FeedbackIcon />
           {!collapsed && "Feedback"}
         </SidebarButton>
       </Link>
       <Link to={PathConstants.SETTINGS}>
-        <SidebarButton collapsed={collapsed}>
+        <SidebarButton $active={activeButton === 3} onClick={() => setActiveButton(3)}>
           <SettingsIcon />
           {!collapsed && "Settings"}
         </SidebarButton>

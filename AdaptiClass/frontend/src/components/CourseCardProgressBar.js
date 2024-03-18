@@ -28,8 +28,8 @@ const ProgressFill = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  width: ${(props) => props.width || '0%'};
-  background-color: ${(props) => props.color || '#49C96D'};
+  width: ${(props) => props.$width || '0%'};
+  background-color: ${(props) => props.$color || '#49C96D'};
 `;
 
 const TextContainer = styled.div`
@@ -65,7 +65,7 @@ const CourseCardProgressBar = ({ label, percentage }) => {
       </TextContainer>
       <ProgressBarContainer>
         <ProgressBackground/>
-        <ProgressFill width={`${percentage}%`} color={color} />
+        <ProgressFill $width={`${percentage}%`} $color={color} />
       </ProgressBarContainer>
     </ProgressBarWrapper>
   );
