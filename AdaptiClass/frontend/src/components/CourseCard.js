@@ -2,7 +2,6 @@ import React from "react";
 import styled from "styled-components";
 import CourseCardProgressBar from "./CourseCardProgressBar";
 import { Link } from "react-router-dom";
-import PathConstants from "../routes/pathConstants";
 
 const CourseCardWrapper = styled.div`
   width: 302px;
