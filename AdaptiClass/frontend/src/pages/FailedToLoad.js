@@ -30,7 +30,8 @@ const AppName = styled.h1`
   font-size: 24px;
 `;
 
-const Message = styled.body`
+const Message = styled.p`
+    margin:0;
     font-size: 14px;
     font-weight: 400;
     color: #595F69;

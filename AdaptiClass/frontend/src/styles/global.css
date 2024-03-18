@@ -13,6 +13,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+p {
+  font-family: 'Poppins', sans-serif; /* Poppins as the primary font */
+  /* Fallbacks if Poppins fails to load */
+  font-family: 'Poppins', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
 a {
   text-decoration: none; /* Removes underline */
   color: inherit; /* Inherits the color from the parent */

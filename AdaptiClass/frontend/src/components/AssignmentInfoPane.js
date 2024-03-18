@@ -62,7 +62,8 @@ const StartButton = styled.button`
     margin-left: 8px;
   }
 
-  body {
+  p {
+    margin:0;
     flex-grow: 1;
     font-weight: 500;
     font-size: 15px;
@@ -102,7 +103,8 @@ const DueDateContainer = styled.div`
   gap: 16px;
   margin-left: 20px;
 
-  body {
+  p {
+    margin:0;
     font-weight: 500;
     font-size: 14px;
     color: #595f69;
@@ -127,7 +129,8 @@ const DueDate = styled.div`
     margin-left: 15px;
   }
 
-  body {
+  p {
+    margin:0;
     font-size: 14px;
     color: #3f434a;
     margin-right: 15px;
@@ -141,7 +144,8 @@ const InstructorContainer = styled.div`
   align-items: flex-start;
   gap: 16px;
 
-  body {
+  p {
+    margin: 0;
     font-weight: 500;
     font-size: 14px;
     color: #595f69;
@@ -166,7 +170,8 @@ const Instructor = styled.div`
     margin-left: 15px;
   }
 
-  body {
+  p {
+    margin:0;
     font-size: 14px;
     color: #3f434a;
     margin-right: 15px;
@@ -182,7 +187,8 @@ const AssignmentDescriptionWrapper = styled.div`
   gap: 16px;
 `;
 
-const AssignmentDescriptionLabel = styled.body`
+const AssignmentDescriptionLabel = styled.p`
+  margin: 0;
   font-weight: 500;
   font-size: 14px;
   color: #595f69;
@@ -190,7 +196,8 @@ const AssignmentDescriptionLabel = styled.body`
   margin-right: 20px;
 `;
 
-const AssignmentDescriptionText = styled.body`
+const AssignmentDescriptionText = styled.p`
+  margin: 0;
   font-size: 14px;
   color: #595f69;
   text-wrap: wrap;
@@ -208,7 +215,8 @@ const ClassCompletionWrapper = styled.div`
   gap: 15px;
 `;
 
-const ClassCompletionLabel = styled.body`
+const ClassCompletionLabel = styled.p`
+  margin: 0;
   font-weight: 500;
   font-size: 14px;
   color: #595f69;
@@ -239,7 +247,8 @@ const CompletionElement = styled.div`
     color: #304ffd;
   }
 
-  body {
+  p {
+    margin: 0;
     font-size: 14px;
     color: #3f434a;
   }
@@ -286,7 +295,7 @@ const AssignmentInfoPane = ({
         </CloseButton>
         <StartButton>
           <ZapIcon />
-          <body>Start</body>
+          <p>Start</p>
         </StartButton>
       </ButtonContainer>
       <AssignmentTitle>
@@ -294,19 +303,19 @@ const AssignmentInfoPane = ({
       </AssignmentTitle>
       <TwoColWrapper>
         <DueDateContainer>
-          <body>DUE DATE</body>
+          <p>DUE DATE</p>
           <DueDate>
             <CalendarIcon />
-            <body>
+            <p>
               {data["due_date"] ? convertJsonDate(data["due_date"]) || "" : ""}
-            </body>
+            </p>
           </DueDate>
         </DueDateContainer>
         <InstructorContainer>
-          <body>INSTRUCTOR</body>
+          <p>INSTRUCTOR</p>
           <Instructor>
             <img src={instructorImage} alt="Instructor" />
-            <body>{instructorName}</body>
+            <p>{instructorName}</p>
           </Instructor>
         </InstructorContainer>
       </TwoColWrapper>
@@ -339,7 +348,7 @@ const AssignmentInfoPane = ({
               ) : (
                 <CheckboxUncheckedIcon />
               )}
-              <body>{element["title"]}</body>
+              <p>{element["title"]}</p>
             </CompletionElement>
           ))}
       </ClassCompletionWrapper>

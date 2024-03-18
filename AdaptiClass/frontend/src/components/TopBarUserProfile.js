@@ -44,7 +44,7 @@ const ProfileHeader = styled.div`
   }
 `;
 
-const Username = styled.body`
+const Username = styled.p`
   font-size: 15px;
 `;
 

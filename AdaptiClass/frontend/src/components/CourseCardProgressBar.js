@@ -38,7 +38,8 @@ const TextContainer = styled.div`
   margin-bottom: 5px;
 `;
 
-const Text = styled.body`
+const Text = styled.p`
+    margin:0;
     font-size: 14px;
     font-weight: 400;
     color: #595F69;
