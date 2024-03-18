@@ -342,7 +342,7 @@ const AssignmentInfoPane = ({
         </CompletionBarWrapper>
         {data["course_elements"] &&
           data["course_elements"].map((element) => (
-            <CompletionElement>
+            <CompletionElement key={element["id"]}>
               {element["status"] === "complete" ? (
                 <CheckboxClosedIcon />
               ) : (
