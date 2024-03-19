@@ -37,11 +37,13 @@ const ProfileInformationLabelContainer = styled.div`
   margin-left: 10px;
 `;
 
-const Username = styled.body`
+const Username = styled.p`
+  margin: 0;
   font-size: 15px;
 `;
 
-const Role = styled.body`
+const Role = styled.p`
+  margin: 0;
   font-size: 13px;
   color: #8a9099;
 `;

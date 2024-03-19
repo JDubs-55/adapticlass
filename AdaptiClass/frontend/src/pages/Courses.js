@@ -77,7 +77,10 @@ const ControlsFilterButton = styled.button`
   }
 `;
 
-const ButtonLabelText = styled.body`
+const ButtonLabelText = styled.p`
+  margin:0;
+  font-family: Poppins;
+  font-weight: 400;
   font-size: 15px;
   color: #8a9099;
 `;
@@ -91,10 +94,11 @@ const ButtonLabelCount = styled.div`
   padding: 2px 10px;
   background-color: #e8e9eb;
 
-  body {
+  p {
+    margin:0;
     color: #8a9099;
     font-size: 10px;
-    font-weight: 600px;
+    font-weight: 600;
   }
 `;
 
@@ -151,7 +155,6 @@ const CourseContent = () => {
   //Handle when the user switches between viewing their current and completed courses
   const handleFilterChange = (newFilterType) => {
     setFilterType(newFilterType);
-    console.log(displayedCourses);
   };
 
   return (
@@ -170,7 +173,7 @@ const CourseContent = () => {
           >
             <ButtonLabelText>Current</ButtonLabelText>
             <ButtonLabelCount>
-              <body>{currentCourses ? currentCourses.length : 0}</body>
+              <p>{currentCourses ? currentCourses.length : 0}</p>
             </ButtonLabelCount>
           </ControlsFilterButton>
           <ControlsFilterButton
@@ -179,7 +182,7 @@ const CourseContent = () => {
           >
             <ButtonLabelText>Completed</ButtonLabelText>
             <ButtonLabelCount>
-              <body>{completedCourses ? completedCourses.length : 0}</body>
+              <p>{completedCourses ? completedCourses.length : 0}</p>
             </ButtonLabelCount>
           </ControlsFilterButton>
         </ControlsButtonContainer>

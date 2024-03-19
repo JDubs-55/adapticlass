@@ -272,7 +272,7 @@ export const CheckboxUncheckedIcon = () => (
       <path
         d="M16.25 9C16.25 13.0041 13.0041 16.25 9 16.25C4.99594 16.25 1.75 13.0041 1.75 9C1.75 4.99594 4.99594 1.75 9 1.75C13.0041 1.75 16.25 4.99594 16.25 9Z"
         stroke="#E8E9EB"
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
     </g>
   </svg>
@@ -368,7 +368,7 @@ export const CheckboxClosedIcon = () => (
       <path
         d="M15.25 9C15.25 13.0041 12.0041 16.25 8 16.25C3.99594 16.25 0.75 13.0041 0.75 9C0.75 4.99594 3.99594 1.75 8 1.75C12.0041 1.75 15.25 4.99594 15.25 9Z"
         stroke="currentColor"
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
     </g>
     <g filter="url(#filter0_d_1076_87)">
@@ -387,9 +387,9 @@ export const CheckboxClosedIcon = () => (
         width="17.2358"
         height="14.0796"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
+        colorInterpolationFilters="sRGB"
       >
-        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"

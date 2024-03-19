@@ -74,7 +74,8 @@ const CalendarWrapper = styled.div`
   }
 `;
 
-const LargeItemLabel = styled.body`
+const LargeItemLabel = styled.p`
+  margin:0;
   font-size: 14px;
   font-weight: 400;
   color: #3f434a;
@@ -83,7 +84,8 @@ const LargeItemLabel = styled.body`
   white-space: nowrap;
 `;
 
-const SmallItemLabel = styled.body`
+const SmallItemLabel = styled.p`
+    margin:0;
     font-size: 14px;
     font-weight: 400;
     color: #3f434a;

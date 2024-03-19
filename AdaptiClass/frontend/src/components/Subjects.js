@@ -42,7 +42,7 @@ const SubjectTitle = styled.h2`
 `;
 
 const PercentageChange = styled.div`
-  color: ${props => props.isPositive ? '#4caf50' : '#f44336'};
+  color: ${(props) => props.$isPositive ? '#4caf50' : '#f44336'};
   font-size: 14px;
   margin-top: 4px;
 `;
@@ -78,7 +78,7 @@ const Subject = ({ name, percentage, change }) => {
       <ClickableSubjectContainer onClick={handleClick}>
         <SubjectInfo>
           <SubjectTitle>{name}</SubjectTitle>
-          <PercentageChange isPositive={change >= 0}>
+          <PercentageChange $isPositive={change >= 0}>
             {change > 0 ? `↑ ${change}%` : (change < 0 ? `↓ ${Math.abs(change)}%` : '')}
           </PercentageChange>
         </SubjectInfo>

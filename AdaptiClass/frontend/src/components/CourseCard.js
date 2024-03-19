@@ -47,18 +47,21 @@ const CourseInformationLabelContainer = styled.div`
 
 `;
 
-const CourseName = styled.body`
+const CourseName = styled.p`
+  margin:0;
   font-size: 18px;
   font-weight: 600;
   color: #3f434a;
 `;
 
-const CourseInstructor = styled.body`
+const CourseInstructor = styled.p`
+  margin: 0;
   font-size: 14px;
   color: #595f69;
 `;
 
-const CourseDescription = styled.body`
+const CourseDescription = styled.p`
+  margin: 0;
   color: #595F69;
   font-size: 14px;
   font-weight: 400;

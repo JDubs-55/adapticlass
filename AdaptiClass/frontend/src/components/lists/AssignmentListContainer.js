@@ -43,7 +43,8 @@ const TodoHeader = styled.button`
     color: #3f434a;
   }
 
-  body {
+  p {
+    margin: 0;
     font-size: 14px;
     font-weight: 500;
     color: #8a9099;
@@ -68,7 +69,7 @@ const AssignmentListContainer = ({
       <TodoHeader $itemsShown={showItems} onClick={toggleItemsVisibility}>
         <DownArrowLineIcon />
         <h5>{title}</h5>
-        <body>{`(${numElements})`}</body>
+        <p>{`(${numElements})`}</p>
       </TodoHeader>
       {showItems && data.map((element) => (
         <AssignmentListItem
