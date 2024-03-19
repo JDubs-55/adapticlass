@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import axios from "axios";
 import PathConstants from "../routes/pathConstants";
 import { useAuth0 } from "@auth0/auth0-react";
-import { AppLoader } from "../pages/AppLoader";
+import { AppLoader } from "../pages/helperScreens/AppLoader";
 
 const RedirectComponent = () => {
   const { isAuthenticated, user } = useAuth0();

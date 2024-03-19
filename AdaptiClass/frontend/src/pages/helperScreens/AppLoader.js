@@ -1,6 +1,6 @@
 import React from "react";
 import styled, { keyframes }from "styled-components";
-import { RocketIcon } from "../assets/Icons";
+import { RocketIcon } from "../../assets/Icons";
 
 const LoadingPageWrapper = styled.div`
   height: 100vh;

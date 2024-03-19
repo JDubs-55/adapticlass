@@ -6,7 +6,7 @@ import styled from "styled-components";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 
-import { PageLoader } from "../pages/PageLoader";
+import { PageLoader } from "../pages/helperScreens/PageLoader";
 
 const Container = styled.div`
   display: flex;

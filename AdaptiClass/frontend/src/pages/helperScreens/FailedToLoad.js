@@ -1,6 +1,6 @@
 import React from "react";
-import styled, { keyframes }from "styled-components";
-import { RocketIcon } from "../assets/Icons";
+import styled from "styled-components";
+import { RocketIcon } from "../../assets/Icons";
 
 const LoadingPageWrapper = styled.div`
   width: 100%;
@@ -30,30 +30,22 @@ const AppName = styled.h1`
   font-size: 24px;
 `;
 
-const rotate = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const LoadingSymbol = styled.div`
-  margin-top: 20px;
-  border: 4px solid #ccc;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  animation: ${rotate} 1s linear infinite;
+const Message = styled.p`
+    margin:0;
+    font-size: 14px;
+    font-weight: 400;
+    color: #595F69;
 `;
 
 
 
-export const PageLoader = () => {
+export const FailedToLoadPage = () => {
   return (
     <LoadingPageWrapper>
       <CenterContainer>
         <RocketIcon/>
         <AppName>AdaptiClass</AppName>
-        <LoadingSymbol/>
+        <Message>Sorry, this content couldn't be loaded...</Message>
       </CenterContainer>
     </LoadingPageWrapper>
   );

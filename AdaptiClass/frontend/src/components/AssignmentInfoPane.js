@@ -8,6 +8,8 @@ import {
   CheckboxUncheckedIcon,
 } from "../assets/Icons";
 import CompletionBar from "./CompletionBar";
+import { Link } from "react-router-dom";
+import PathConstants from "../routes/pathConstants";
 
 const ComponentWrapper = styled.div`
   width: 100%;
@@ -293,10 +295,12 @@ const AssignmentInfoPane = ({
         <CloseButton onClick={toggleOffInfoPane}>
           <CrossoutIcon />
         </CloseButton>
-        <StartButton>
-          <ZapIcon />
-          <p>Start</p>
-        </StartButton>
+        <Link to={`${PathConstants.ASSIGNMENT}/${data["id"]}`}>
+          <StartButton>
+            <ZapIcon />
+            <p>Start</p>
+          </StartButton>
+        </Link>
       </ButtonContainer>
       <AssignmentTitle>
         <h5>{data["title"]}</h5>
