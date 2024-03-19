@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from . serializers import *
 from . models import *
 from django.shortcuts import get_object_or_404
+import google.generativeai as genai
 
 # Create your views here.
 class UserListView(APIView):
@@ -404,3 +405,46 @@ class AssignmentListView(APIView):
         else:
             return Response({"error": "You do not have permission to create assignments for this section"}, status=status.HTTP_403_FORBIDDEN)
 
+
+class ChatbotView(APIView):
+    def post(self, request):
+        chat_prompt = request.data.get('problem')
+        
+        genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
+        generation_config = {
+            "temperature": 0.9,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 2048,
+        }
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+        ]
+        model = genai.GenerativeModel(model_name="gemini-1.0-pro",
+                                      generation_config=generation_config,
+                                      safety_settings=safety_settings)
+        directions = "For the given Algebra 1 problem, illustrate each step towards finding the solution. Provide a concise text explanation for what each step accomplishes, aiming for clarity and brevity. It's crucial to demonstrate the process without skipping directly to the solution. If the following problem is not related to Math, please respond kindly prompting the student to stay on topic. Problem: "
+        full_prompt = directions + chat_prompt
+        prompt_parts = [{"text": full_prompt}]
+        response = model.generate_content(prompt_parts)
+        
+        if response.parts:
+            return Response({'solution': response.parts[0].text}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'No response generated or the prompt was blocked.'}, 
+                            status=status.HTTP_400_BAD_REQUEST)

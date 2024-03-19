@@ -15,5 +15,6 @@ urlpatterns = [
     path('courses/<int:course_id>/sections/<int:section_id>/assignments/<int:assignment_id>/', AssignmentDetailView.as_view()),
     path('courses/<str:course_name>/sections/', SectionListView.as_view()),  # Endpoint for creating sections under a course
     path('courses/<str:course_name>/sections/<int:section_id>/assignments/', AssignmentListView.as_view()),  # Endpoint for creating assignments under a section
+    path('chat/', ChatbotView.as_view(), name='chatbot_view'),
 ]
 
