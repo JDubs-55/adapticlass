@@ -448,3 +448,52 @@ class ChatbotView(APIView):
         else:
             return Response({'error': 'No response generated or the prompt was blocked.'}, 
                             status=status.HTTP_400_BAD_REQUEST)
+        
+class ProblemGeneratorView(APIView):
+    def post(self, request):
+        chat_prompt = request.data.get('problem')
+        genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
+        generation_config = {
+            "temperature": 0.9,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 2048,
+        }
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+        ]
+        model = genai.GenerativeModel(model_name="gemini-1.0-pro",
+                                      generation_config=generation_config,
+                                      safety_settings=safety_settings)
+        directions = "For the given Algebra 1 problem, provide a similar but different problem with the same type, format, and difficulty. give the problem and the answer. they should be clearly labled Problem: put_problem_here Answer: put_answer_here. If the current problem is not related to math, respond with the word 'No' and nothing else - I need this for error handling. Current Problem: "
+        full_prompt = directions + chat_prompt
+        prompt_parts = [{"text": full_prompt}]
+        response = model.generate_content(prompt_parts)
+        
+        if response.parts:
+            response_text = response.parts[0].text
+            if response_text == "No":
+                return Response({'error': 'The provided problem is not related to Algebra 1.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                return Response({'newproblem': response_text}, status=status.HTTP_200_OK)
+            except ValueError:
+                return Response({'error': 'Error getting the response for no good reason.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'No response generated or the prompt was blocked.'}, 
+                            status=status.HTTP_400_BAD_REQUEST)
