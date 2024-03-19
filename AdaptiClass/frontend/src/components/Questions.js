@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
-import assignments from '../assignments.json';
+import assignments from '../mockRequests/assignments.json';
 
 const Wrapper = styled.div`
   background-color: #fff;

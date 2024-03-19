@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Questions from '../components/Questions';
 import ProgressBar from '../components/ProgressBar';
 import ChatBox from '../components/Chatbox';
-import assignments from '../assignments.json'; 
+import assignments from '../mockRequests/assignments.json'; 
 
 const MainLayout = styled.div`
   display: flex;

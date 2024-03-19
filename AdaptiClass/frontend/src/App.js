@@ -3,12 +3,12 @@ import { Route, Routes } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { AppLoader } from "./pages/AppLoader";
+import { AppLoader } from "./pages/helperScreens/AppLoader";
 import { AuthenticationGuard } from "./authentication/AuthenticationGuard";
 import PathConstants from "./routes/pathConstants";
-import NewUserDetailsForm from "./pages/NewUser";
+import NewUserDetailsForm from "./pages/helperScreens/NewUser";
 import RedirectComponent from "./authentication/RedirectComponent";
-import { FailedToLoadPage } from './pages/FailedToLoad';
+import { FailedToLoadPage } from './pages/helperScreens/FailedToLoad';
 
 const HomeContent = React.lazy(() => import("./pages/Home"));
 const CourseContent = React.lazy(() => import("./pages/Courses"));
