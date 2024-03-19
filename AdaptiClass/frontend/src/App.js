@@ -8,6 +8,8 @@ import { AuthenticationGuard } from "./authentication/AuthenticationGuard";
 import PathConstants from "./routes/pathConstants";
 import NewUserDetailsForm from "./pages/NewUser";
 import RedirectComponent from "./authentication/RedirectComponent";
+import { FailedToLoadPage } from './pages/FailedToLoad';
+import AssignmentPage from "./pages/AssignmentsPage";
 
 const HomeContent = React.lazy(() => import("./pages/Home"));
 const CourseContent = React.lazy(() => import("./pages/Courses"));
@@ -31,8 +33,10 @@ function App() {
       >
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
+        <Route path={`${PathConstants.COURSES}/:id`} element={<AssignmentPage/>} />
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.SETTINGS} element={<SettingsContent />} />
+        <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
       </Route>
       <Route
         path={PathConstants.INSTRUCTOR}
@@ -51,6 +55,7 @@ function App() {
           path={PathConstants.SETTINGS}
           element={<div>Teacher Settings Component</div>}
         />
+        <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
       </Route>
       <Route
         path="/"

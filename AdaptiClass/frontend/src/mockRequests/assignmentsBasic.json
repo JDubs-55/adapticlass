@@ -1,0 +1,255 @@
+
+{
+    "id": 1,
+    "title": "Algebra I",
+    "instructor": "Mrs. Jane Doe",
+    "instructor_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAS4SURBVHgBnVhZiFxFFL3v9ayYGdMjLojL9EyMSwQXUD9cmHwMggSXj4AESTSIirgMmoAYgj3+uWb5MERBZpSoqCiICgNBwQXEiB+KfqiTBAVBcZ3sa+fcqVMzt9+revO6Gw5vua+qzr331K2qFhFJxP2Ser2e8tkjLbAlZWyNRsP2ZW1DwNfAUeBb4CJvSwo6jdkkQCYtYfP2tLOz8xpcXwMWp2k6getHvmFqvGjyrg0ySRmbjRrv3wU+m30XISMtkClMoek/S+Y6YD3wAzAD3E5b67poUzPWpvo5BPwLjAPnWuLtaiZnKyBjZZFWKpVbcG0A7wD3E7cBNWmTTCsCDmnmDhJqAojeI2W9b0MzVaAP6M6QsZNmMaNyRUdHx3I+y63AF8BPwB7gV+Av4jdgTRuaeTYUAfapNWd5IGpz/SrD/4BvgBuBq4DLgKuBMXHCu7YFMk/p4Kgtm3FdDWgangDq4orgxwVkEqH3j9CDtRzsPJMKHeB3Eg+l0JK5k2TGAwPWmYGa5PUq1ll/s5XRWArs7O7uHjIDvgV8Ly7HMTJXAv+DzLYAmZV0eEU0MgFCp9ODH1HWNW27gF6ZF6gSmowIuMa2XwUGVNsfIFovQSZtCpW46qlVcztJWNtgkiR7GXobGf1uN/ALMJCx9QDTaDdVgoyP/NzPv3iU4R2zNnZ0A3BSnFg90fdlXhvZqb2FtkEJT/ssmSRLxoftQ+A4sCxgexg4IE4z48A/ETJPkrxqMS3YTWRtwaJXpWc/9/f3D0heM5vETWGN5E0BMkrisLjZW6iZ2LTPKZ3p0QHflMBygN97uN6dsSnOpDPPSDnNRGdZ04Ds6HmSeszY0khB9NAFcxpYFCETy8qcoBdaKD8H9omr4GmkynrHtIjq0jMUKXpFkclFKETG1xEtmHuMnkJkVHcq4hdb0owh7Kd9MIyZATeIS932EBnz7Kt9rQUy2bFzneYEDGwjodHsQLZdtVr11V4rdr+UEHDAVrzTw6ZpDcm8VFDYrPeXMEpbpYRmcrainV5PT08N173qdV9f3xkxMoEBV9OJle0cr0Ka8fe6LDR4hrK2DRLXhcfLkteTRNJkbdE98Bi9HDf2YWxLhnG9FNiUprPfLAoR4ozUXei0+WYhMolkXnqPB4Ej4gTaRfvZFO0HwPnAFAm/KnGRLhG37m0uIJNtlyOT0isdbKlh/qC4hVVTsFvmy4DWnnUS14WP9KqShwj3wmjhaXZQN2Q2AhcDW7DRuo/2V2h7iM+jAT1psVwLTEo5PaVZMv689J0ho6t5B7ADR5XrcT0oLpV2A/dcYMCzxKV+AqXjLrbZxb5CZBwMmQvZ6G/fMW2Pa9h7e3tVN6qrmczAycjIiA7yqSGqRys9tXzS1dV1OW1aCvT4vKCefKjeYHTWGePrwADSNMmO7Mqf1YwS0W3sBO8nUMcu4LM6o3+3eDmMLjTt1/PDHTQOiZs9y7DveVvc7rDBzosK4jAjuLFSkVVM5Qo684K4GapR/tIEonnas67McEA9capoHwCm+EfSTto1HadJvCD6X/DcnsG9UjDtbxZ3ENwPHBM3jbXRCT7rVvVPCR/wYp3qjNQ1bQnbzYJnvXNC7byDpwD7DyJAIvb+FgAAAABJRU5ErkJggg==",
+    "in_progress": [
+        {
+            "id": 1,
+            "status": "incomplete",
+            "title": "Algebraic Expressions - The Distributive Property",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 1,
+                    "title": "Lesson",
+                    "status": "complete"
+                },
+                {
+                    "id": 2,
+                    "title": "Exercises",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 3,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "status": "incomplete",
+            "title": "Algebraic Expressions - The Commutative and Associative Properties",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 4,
+                    "title": "Lesson",
+                    "status": "complete"
+                },
+                {
+                    "id": 5,
+                    "title": "Exercises",
+                    "status": "complete"
+                },
+                {
+                    "id": 6,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "status": "incomplete",
+            "title": "Adding and Subtracting Polynomials",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 7,
+                    "title": "Lesson",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 8,
+                    "title": "Exercises",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 9,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "status": "incomplete",
+            "title": "Multiplying Polynomials",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 10,
+                    "title": "Lesson",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 11,
+                    "title": "Exercises",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 12,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        }
+    ],
+    "upcoming":[
+        {
+            "id": 5,
+            "status": "incomplete",
+            "title": "True and False Equations",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-08T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 13,
+                    "title": "Lesson",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 14,
+                    "title": "Exercises",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 15,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "status": "incomplete",
+            "title": "Solution Sets for Equations and Inequalities",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-08T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 16,
+                    "title": "Lesson",
+                    "status": "complete"
+                },
+                {
+                    "id": 17,
+                    "title": "Exercises",
+                    "status": "complete"
+                },
+                {
+                    "id": 18,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "status": "incomplete",
+            "title": "Solving Equations",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-08T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 19,
+                    "title": "Lesson",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 20,
+                    "title": "Exercises",
+                    "status": "incomplete"
+                },
+                {
+                    "id": 21,
+                    "title": "Assessment",
+                    "status": "incomplete"
+                }
+            ]
+        }
+
+    ],
+    "completed":[
+        {
+            "id": 8,
+            "status": "complete",
+            "title": "Graphs of Piecewise Linear Functions",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 22,
+                    "title": "Lesson",
+                    "status": "complete"
+                },
+                {
+                    "id": 23,
+                    "title": "Exercises",
+                    "status": "complete"
+                },
+                {
+                    "id": 24,
+                    "title": "Assessment",
+                    "status": "complete"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "status": "complete",
+            "title": "Graphs of Quadratic Functions",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 25,
+                    "title": "Lesson",
+                    "status": "complete"
+                },
+                {
+                    "id": 26,
+                    "title": "Exercises",
+                    "status": "complete"
+                },
+                {
+                    "id": 27,
+                    "title": "Assessment",
+                    "status": "complete"
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "status": "complete",
+            "title": "Graphs of Exponential Functions",
+            "description": "This lesson plan delves into the concept of algebraic expressions, emphasizing a thorough understanding of the Distributive Property. Students will actively participate in exercises that highlight the application of this fundamental algebraic principle, enabling them to simplify and solve complex equations.",
+            "due_date": "2024-01-01T09:30:00 -05:00",
+            "course_elements": [
+                {
+                    "id": 28,
+                    "title": "Lesson",
+                    "status": "complete"
+                },
+                {
+                    "id": 29,
+                    "title": "Exercises",
+                    "status": "complete"
+                },
+                {
+                    "id": 30,
+                    "title": "Assessment",
+                    "status": "complete"
+                }
+            ]
+        }
+    ]
+
+}

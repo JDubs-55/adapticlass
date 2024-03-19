@@ -6,6 +6,7 @@ const PathConstants = {
     FEEDBACK: "feedback",
     SETTINGS: "settings",
     CALLBACK: "callback",
+    ERROR: "*",
     NEWUSER: "newuser",
     STUDENT: "student",
     INSTRUCTOR: "instructor",
