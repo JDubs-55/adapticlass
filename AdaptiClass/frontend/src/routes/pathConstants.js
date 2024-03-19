@@ -10,6 +10,7 @@ const PathConstants = {
     NEWUSER: "newuser",
     STUDENT: "student",
     INSTRUCTOR: "instructor",
+    ASSIGNMENT: "assignment",
 }
 
 export default PathConstants

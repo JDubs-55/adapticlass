@@ -12,7 +12,7 @@ const MainLayout = styled.div`
   gap: 20px;
 `;
 
-const Courses = () => {
+const AssignmentsDetail = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const totalQuestions = assignments.length;
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -34,4 +34,4 @@ const Courses = () => {
   );
 };
 
-export default Courses;
+export default AssignmentsDetail;

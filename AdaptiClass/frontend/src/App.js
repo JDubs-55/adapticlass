@@ -9,12 +9,13 @@ import PathConstants from "./routes/pathConstants";
 import NewUserDetailsForm from "./pages/NewUser";
 import RedirectComponent from "./authentication/RedirectComponent";
 import { FailedToLoadPage } from './pages/FailedToLoad';
-import AssignmentPage from "./pages/AssignmentsPage";
 
 const HomeContent = React.lazy(() => import("./pages/Home"));
 const CourseContent = React.lazy(() => import("./pages/Courses"));
 const FeedbackContent = React.lazy(() => import("./pages/Feedback"));
 const SettingsContent = React.lazy(() => import("./pages/Settings"));
+const AssignmentPage = React.lazy(() => import("./pages/AssignmentsPage"));
+const AssignmentsDetailPage = React.lazy(() => import("./pages/AssignmentsDetailPage"));
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0();
@@ -34,6 +35,7 @@ function App() {
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
         <Route path={`${PathConstants.COURSES}/:id`} element={<AssignmentPage/>} />
+        <Route path={`${PathConstants.COURSES}/:id/${PathConstants.ASSIGNMENT}/:id`} element={<AssignmentsDetailPage/>} />
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.SETTINGS} element={<SettingsContent />} />
         <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
