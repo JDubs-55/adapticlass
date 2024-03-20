@@ -5,31 +5,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('auth_id','email','email_verified','auth0_name','display_name','picture','role')
-        
-class StudentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Student
-        fields = ('id', 'name', 'email')
-
-class InstructorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Instructor
-        fields = ('id', 'name', 'email')
-
-class GradeSerializer(serializers.ModelSerializer):
-    course = serializers.SerializerMethodField('get_course')
-    student = serializers.SerializerMethodField('get_student')
-
-    def get_course(self, obj):
-        return obj.course.name
-    
-    def get_student(self, obj):
-        return obj.student.email
-
-    class Meta:
-        model = Grade
-        fields = ('id', 'course', 'student', 'score', 'letterGrade')
-
+        read_only_fields = ('auth_id','email','email_verified','auth0_name','picture','role')
 
 
 # Updated  serializers.py
@@ -41,16 +17,15 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
+    sections = SectionSerializer(many=True)  # Add this line to include sections
     students = serializers.SerializerMethodField('get_students')
     instructor = serializers.SerializerMethodField('get_instructor')
-    sections = SectionSerializer(many=True)  # Add this line to include sections
-
-
+    
     def get_students(self, obj):
-        return [students.email for students in obj.students.all()]
+        return [students.auth_id for students in obj.users.all() if students.role == 'Student']
 
     def get_instructor(self, obj):
-        return obj.instructor.email
+        return [instructor.auth_id for instructor in obj.users.all() if instructor.role == 'Instructor']
     
 
     def create(self, validated_data):
@@ -79,11 +54,8 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ('id', 'name', 'students', 'instructor', 'sections')
-        read_only_fields = ('id', 'name')
+        read_only_fields = ('id', 'name', 'sections')
     
-
-
-
 
 
 
