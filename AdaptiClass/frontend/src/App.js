@@ -9,6 +9,7 @@ import PathConstants from "./routes/pathConstants";
 import NewUserDetailsForm from "./pages/helperScreens/NewUser";
 import RedirectComponent from "./authentication/RedirectComponent";
 import { FailedToLoadPage } from './pages/helperScreens/FailedToLoad';
+import WebGazerComponent from "./pages/helperScreens/WebGazerComponent";
 
 const HomeContent = React.lazy(() => import("./pages/Home"));
 const CourseContent = React.lazy(() => import("./pages/Courses"));
@@ -35,7 +36,7 @@ function App() {
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
         <Route path={`${PathConstants.COURSES}/:id`} element={<AssignmentPage/>} />
-        <Route path={`${PathConstants.COURSES}/:id/${PathConstants.ASSIGNMENT}/:id`} element={<AssignmentsDetailPage/>} />
+        <Route path={`${PathConstants.COURSES}/:id/${PathConstants.ASSIGNMENT}/:id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.SETTINGS} element={<SettingsContent />} />
         <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
