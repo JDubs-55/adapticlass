@@ -11,7 +11,7 @@ const SettingsContent = () => {
     return (
         <Content>
             <h1>Settings Page</h1>
-            <p>This is where settings components go</p>
+            <p>This is where student settings components go</p>
         </Content>
     );
 };
