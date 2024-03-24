@@ -9,17 +9,17 @@ urlpatterns = [
     path('users/<str:user_id>/', UserDetailView.as_view()), #Retrieve user info by id, 200 success/404 not_found
     path('assignments/', AssignmentListView.as_view()),
     path('assignments/<int:pk>/', AssignmentDetailView.as_view(), name='assignment_detail_view'),  # To retrieve, update, or delete an assignment
+    path('assignments/<str:course_name>', CourseAssignmentListView.as_view(), name='course_assignment_view'),
 
-   path('assignmentquestion/', AssignmentQuestionListView.as_view()),
-   path('assignmentquestion/<int:pk>/', AssignmentQuestionDetailView.as_view(), name = 'assignmentquestion_detail_view'),
+    path('assignmentquestions/', AssignmentQuestionListView.as_view()),
+    path('assignmentquestions/<int:pk>/', AssignmentQuestionDetailView.as_view(), name = 'assignmentquestion_detail_view'),
+
+    path('alternatequestions/', AlternateQuestionListView.as_view()),
+    path('alternatequestions/<int:pk>/', AlternateQuestionDetailView.as_view(), name = 'alternatequestion_detail_view'),
 
 
-   path('alternatequestion/', AlternateQuestionListView.as_view()),
-    path('alternatequestion/<int:pk>/', AlternateQuestionDetailView.as_view(), name = 'alternatequestion_detail_view'),
-
-
-    path('question/', QuestionListView.as_view()),
-    path('question/<int:pk>/', QuestionDetailView.as_view(), name = 'question_detail_view'),
+    path('questions/', QuestionListView.as_view()),
+    path('questions/<int:pk>/', QuestionDetailView.as_view(), name = 'question_detail_view'),
 
 
     path('chat/', ChatbotView.as_view(), name='chatbot_view'),

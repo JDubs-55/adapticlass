@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.http import Http404
 from rest_framework import generics
 from rest_framework import status
@@ -150,24 +151,6 @@ class CourseDetailView(APIView):
                 new_course_image = request.data.get('course_image')
                 course.course_image = new_course_image
 
-            # TODO: Implement adding sections to courses here
-
-            # Handle sections
-            # if 'sections' in request.data:
-            #     sections_data = request.data['sections']
-            #     for section_data in sections_data:
-            #         # Remove the 'course' field from each section data
-            #         if 'course' in section_data:
-            #             del section_data['course']
-            #     section_serializer = SectionSerializer(data=sections_data, many=True)
-            #     if section_serializer.is_valid():
-            #         sections = section_serializer.save(course=course)
-            #         serializer.instance.sections.set(sections)
-            #     else:
-            #         return Response(section_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-            # serializer.save()
-
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -220,19 +203,24 @@ class RemoveUsersFromCourseView(APIView):
         return Response(message, status=status.HTTP_200_OK)
 
 
-
-
-
-
 class AssignmentListView(APIView):
+    def get(self, request):
+        course_name = request.query_params.get('course_name')
+        if course_name:
+            try:
+                course = Course.objects.get(name=course_name)
+                assignments = Assignment.objects.filter(course_id=course)
+                serializer = AssignmentSerializer(assignments, many=True)
+                url = reverse('course_assignment_view', kwargs={'course_name': course_name})
+                return redirect(url)
+            except Course.DoesNotExist:
+                return Response({"error": "Course not found"}, status=404)
+        else:
+            assignments = Assignment.objects.all()
+            serializer = AssignmentSerializer(assignments, many=True)
+            return Response(serializer.data)
 
-    def get(self, request, section_pk):
-        assignments = Assignment.objects.all()
-        serializer = AssignmentSerializer(assignments, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, section_pk):
-
+    def post(self, request):
         serializer = AssignmentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -240,21 +228,13 @@ class AssignmentListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
 class AssignmentDetailView(APIView):
-
-
-    
     def get(self, request, pk):
         assignment = get_object_or_404(Assignment, pk=pk)
         serializer = AssignmentSerializer(assignment)
         return Response(serializer.data)
-    
 
     def put(self, request, pk):
-        
 
         assignment = get_object_or_404(Assignment, pk=pk)
 
@@ -263,31 +243,29 @@ class AssignmentDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def delete(self, request, pk):
-        
+
         assignment = get_object_or_404(Assignment, pk=pk)
         assignment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-
-
+    
+class CourseAssignmentListView(APIView):
+    def get(self, request, course_name):
+        course = get_object_or_404(Course, name=course_name)
+        assignments = Assignment.objects.filter(course_id=course)
+        serializer = AssignmentSerializer(assignments, many=True)
+        return Response(serializer.data)
 
 class AssignmentQuestionListView(APIView):
 
-
-    def get(self, request, section_pk):
+    def get(self, request):
         assignments_questions = AssignmentQuestion.objects.all()
-        serializer = AssignmentQuestionSerializer(assignments_questions, many=True)
+        serializer = AssignmentQuestionSerializer(
+            assignments_questions, many=True)
         return Response(serializer.data)
 
-
-    def post(self, request, section_pk):
+    def post(self, request):
 
         serializer = AssignmentQuestionSerializer(data=request.data)
         if serializer.is_valid():
@@ -296,47 +274,39 @@ class AssignmentQuestionListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
 class AssignmentQuestionDetailView(APIView):
-   
 
     def get(self, request, pk):
         assignments_questions = get_object_or_404(AssignmentQuestion, pk=pk)
         serializer = AssignmentQuestionSerializer(assignments_questions)
         return Response(serializer.data)
-    
 
     def put(self, request, pk):
-        
 
         assignments_questions = get_object_or_404(AssignmentQuestion, pk=pk)
 
-        serializer = AssignmentQuestionSerializer(AssignmentQuestion, data=request.data)
+        serializer = AssignmentQuestionSerializer(
+            assignments_questions, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def delete(self, request, pk):
-        
+
         assignments_questions = get_object_or_404(AssignmentQuestion, pk=pk)
         assignments_questions.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class QuestionListView(APIView):
 
-    def get(self, request, section_pk):
+    def get(self, request):
         questions = Question.objects.all()
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data)
 
-
-    def post(self, request, section_pk):
+    def post(self, request):
 
         serializer = QuestionSerializer(data=request.data)
         if serializer.is_valid():
@@ -351,10 +321,8 @@ class QuestionDetailView(APIView):
         questions = get_object_or_404(Question, pk=pk)
         serializer = QuestionSerializer(questions)
         return Response(serializer.data)
-    
 
     def put(self, request, pk):
-        
 
         questions = get_object_or_404(Question, pk=pk)
 
@@ -363,27 +331,22 @@ class QuestionDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def delete(self, request, pk):
-        
+
         questions = get_object_or_404(Question, pk=pk)
         questions.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
-
 class AlternateQuestionListView(APIView):
 
-    def get(self, request, section_pk):
+    def get(self, request):
         alt_questions = AlternateQuestion.objects.all()
         serializer = AlternateQuestionSerializer(alt_questions, many=True)
         return Response(serializer.data)
 
-
-    def post(self, request, section_pk):
+    def post(self, request):
 
         serializer = AlternateQuestionSerializer(data=request.data)
         if serializer.is_valid():
@@ -398,22 +361,20 @@ class AlternateQuestionDetailView(APIView):
         alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
         serializer = AlternateQuestionSerializer(alt_questions)
         return Response(serializer.data)
-    
 
     def put(self, request, pk):
-        
 
         alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
 
-        serializer = AlternateQuestionSerializer(alt_questions, data=request.data)
+        serializer = AlternateQuestionSerializer(
+            alt_questions, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def delete(self, request, pk):
-        
+
         alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
         alt_questions.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

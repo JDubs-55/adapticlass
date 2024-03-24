@@ -17,8 +17,6 @@ class User(models.Model):
         return self.auth_id + " : " + self.email
 
 
-
-
 class Course(models.Model):
     status_choices = [('Current', 'Current'), ('Completed', 'Completed')]
     status = models.CharField(max_length=15, choices=status_choices, default='Current')
@@ -27,16 +25,15 @@ class Course(models.Model):
     description = models.TextField(blank=True)
     # grade = models.ManyToManyField(Grade) -- TODO: Implement after Grade model is created
     course_image = models.URLField(max_length=300, blank=True)
-    # sections = models.ManyToManyField(Section, blank = True) -- TODO: Implement after Section and Assignment models are finished
 
     def __str__(self):
         return str(self.id) + ' : ' + self.name
 
 
-
 class Assignment(models.Model):
     assignment_status_choices = [('In Progress', 'In Progress'), ('Upcoming', 'Upcoming'), ('Past Due', 'Past Due')]
     assignment_status = models.CharField(max_length = 20, choices = assignment_status_choices, default='Upcoming')
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, null=False)
     due_date = models.DateField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
