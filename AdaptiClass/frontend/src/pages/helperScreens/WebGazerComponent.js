@@ -7,7 +7,7 @@ const WebGazerComponent = ({component: Component}) => {
         .showVideo(false)
         // .showFaceOverlay(false)
         // .showFaceFeedbackBox(false)
-        .showPredictionPoints(false)
+        .showPredictionPoints(true)
         .setGazeListener((data, clock)=> {
           console.log(data, clock);
         }).begin();

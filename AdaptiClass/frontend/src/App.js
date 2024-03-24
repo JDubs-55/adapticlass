@@ -45,15 +45,12 @@ function App() {
         path={PathConstants.INSTRUCTOR}
         element={<AuthenticationGuard component={MainLayout} />}
       >
-        <Route path={PathConstants.HOME} element={<div>Teacher Home Component</div>} />
-        <Route
-          path={PathConstants.COURSES}
-          element={<div>Teacher Courses Component</div>}
-        />
-        <Route
-          path={PathConstants.FEEDBACK}
-          element={<div>Teacher Feedback Component</div>}
-        />
+        <Route path={PathConstants.HOME} element={<HomeContent />} />
+        <Route path={PathConstants.COURSES} element={<CourseContent />} />
+        <Route path={`${PathConstants.COURSES}/:id`} element={<AssignmentPage/>} />
+        <Route path={`${PathConstants.COURSES}/:id/${PathConstants.ASSIGNMENT}/:id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
+        <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
+        <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
         <Route
           path={PathConstants.SETTINGS}
           element={<div>Teacher Settings Component</div>}
