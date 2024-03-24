@@ -220,88 +220,141 @@ class RemoveUsersFromCourseView(APIView):
         return Response(message, status=status.HTTP_200_OK)
 
 
-# sections and assignments view
+
+class SectionListView(APIView):
+    def get(self, request, course_pk):
+        sections = Section.objects.filter(course_id=course_pk)
+        serializer = SectionSerializer(sections, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, course_pk):
+        if request.user.role != 'Instructor':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        serializer = SectionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(course_id=course_pk)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class SectionDetailView(APIView):
-#     def get_object(self, course_id, section_id):
-#         try:
-#             return Section.objects.get(course_id=course_id, id=section_id)
-#         except Section.DoesNotExist:
-#             raise Http404("Section does not exist")
+class SectionDetailView(APIView):
+    def get_object(self, pk):
+        try:
+            return Section.objects.get(pk=pk)
+        except Section.DoesNotExist:
+            raise Http404
 
-#     def get(self, request, course_id, section_id):
-#         section = self.get_object(course_id, section_id)
-#         serializer = SectionSerializer(section)
-#         return Response(serializer.data)
+    def get(self, request, pk):
+        section = self.get_object(pk)
+        serializer = SectionSerializer(section)
+        return Response(serializer.data)
 
-#     def put(self, request, course_id, section_id):
-#         section = self.get_object(course_id, section_id)
-#         serializer = SectionSerializer(section, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request, pk):
+        if request.user.role != 'Instructor':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        section = self.get_object(pk)
+        serializer = SectionSerializer(section, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class AssignmentDetailView(APIView):
-#     def get_object(self, section_id, assignment_id):
-#         try:
-#             return Assignment.objects.get(section_id=section_id, id=assignment_id)
-#         except Assignment.DoesNotExist:
-#             raise Http404("Assignment does not exist")
-
-#     def get(self, request, section_id, assignment_id):
-#         assignment = self.get_object(section_id, assignment_id)
-#         serializer = AssignmentSerializer(assignment)
-#         return Response(serializer.data)
-
-#     def put(self, request, section_id, assignment_id):
-#         assignment = self.get_object(section_id, assignment_id)
-#         serializer = AssignmentSerializer(assignment, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# # Updated views.py
-# class SectionListView(APIView):
-#     def get(self, request, course_name):
-#         # Retrieve sections for the specified course
-#         sections = Section.objects.filter(course__name=course_name)
-#         serializer = SectionSerializer(sections, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request, course_name):
-#         # Create a new section under the specified course
-#         data = request.data.copy()
-#         data['course'] = course_name  # Assign the course name to the section
-#         serializer = SectionSerializer(data=data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, pk):
+        if request.user.role != 'Instructor':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        section = self.get_object(pk)
+        section.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# class AssignmentListView(APIView):
-#     def post(self, request):
-#         section_id = request.data.get('section')
-#         if not section_id:
-#             return Response({"error": "Section ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-#         try:
-#             section = Section.objects.get(id=section_id)
-#         except Section.DoesNotExist:
-#             return Response({"error": "Section not found"}, status=status.HTTP_404_NOT_FOUND)
+class AssignmentListView(APIView):
+    def get(self, request, section_pk):
+        assignments = Assignment.objects.filter(section_id=section_pk)
+        serializer = AssignmentSerializer(assignments, many=True)
+        return Response(serializer.data)
 
-#         # Check if the user making the request is associated with the course as an instructor
-#         if request.user.instructor.courses.filter(id=section.course.id).exists():
-#             serializer = AssignmentSerializer(data=request.data)
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"error": "You do not have permission to create assignments for this section"}, status=status.HTTP_403_FORBIDDEN)
+    def post(self, request, section_pk):
+        if request.user.role != 'Instructor':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        serializer = AssignmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(section_id=section_pk)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AssignmentDetailView(APIView):
+    def get_object(self, pk):
+        try:
+            return Assignment.objects.get(pk=pk)
+        except Assignment.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        assignment = self.get_object(pk)
+        serializer = AssignmentSerializer(assignment)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        if request.user.role != 'Instructor':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        assignment = self.get_object(pk)
+        serializer = AssignmentSerializer(assignment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        if request.user.role != 'Instructor':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        assignment = self.get_object(pk)
+        assignment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AssignmentQuestionListView(APIView):
+    def get(self, request, assignment_pk):
+        questions = AssignmentQuestion.objects.filter(assignment_id=assignment_pk)
+        serializer = AssignmentQuestionSerializer(questions, many=True)
+        return Response(serializer.data)
+
+    # Assuming a method for students to submit answers (simplified)
+    def post(self, request, assignment_pk):
+        if request.user.role != 'Student':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        # This should be modified to update an existing AssignmentQuestion with the student's answer
+        # Placeholder implementation
+        return Response({"message": "Answer submitted (placeholder)"})
+    
+
+class AssignmentQuestionDetailView(APIView):
+    def get_object(self, pk):
+        try:
+            return AssignmentQuestion.objects.get(pk=pk)
+        except AssignmentQuestion.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        question = self.get_object(pk)
+        serializer = AssignmentQuestionSerializer(question)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        if request.user.role != 'Student':
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        question = self.get_object(pk)
+        # Assuming the request.data contains the student's answer
+        serializer = AssignmentQuestionSerializer(question, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 
 
 class ChatbotView(APIView):

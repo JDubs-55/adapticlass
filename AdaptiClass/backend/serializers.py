@@ -30,14 +30,30 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'status', 'name',
                             'description', 'course_image')
 
-# Updated  serializers.py
-# class SectionSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Section
-#         fields = ('id', 'name', 'details')
+class SectionSerializer(serializers.ModelSerializer):
+    assignments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Section
+        fields = ('id', 'course', 'name', 'details', 'assignments')
+
+    def get_assignments(self, obj):
+        # Delayed import to avoid circular dependency
+        from .serializers import AssignmentSerializer  # Adjust this import based on your project structure
+        assignments = obj.assignments.all()
+        return AssignmentSerializer(assignments, many=True, read_only=True).data
 
 
-# class AssignmentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Assignment
-#         fields = ('id', 'section', 'name', 'details')
+class AssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = (
+        'assignment_id', 'student_id', 'course_id', 'status', 'title', 'description', 'due_date', 'grade', 'lesson',
+        'exercise', 'assessment')
+
+
+class AssignmentQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssignmentQuestion
+        fields = ('question_id', 'assignment_id', 'question', 'answer', 'correct_answer', 'question_type')
+

@@ -17,21 +17,7 @@ class User(models.Model):
         return self.auth_id + " : " + self.email
 
 
-# class Section(models.Model):
-#     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
-#     name = models.CharField(max_length=50)
-#     details = models.TextField()
 
-#     def __str__(self):
-#         return f"Section {self.name} - {self.course.name}"
-
-# class Assignment(models.Model):
-#     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='assignments')
-#     name = models.CharField(max_length=50)
-#     details = models.TextField()
-
-#     def __str__(self):
-#         return f"Assignment {self.name} - {self.section.course.name}"
 
 class Course(models.Model):
     status_choices = [('Current', 'Current'), ('Completed', 'Completed')]
@@ -45,3 +31,46 @@ class Course(models.Model):
 
     def __str__(self):
         return str(self.id) + ' : ' + self.name
+
+
+class Section(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
+    name = models.CharField(max_length=50)
+    #details = models.TextField()
+
+    def __str__(self):
+        return f"{self.name} - {self.course.name}"
+
+
+class Assignment(models.Model):
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='assignments')
+
+    assignment_status_choices = [('Completed', 'Completed'), ('Current', 'Current'), ('Upcoming', 'Upcoming')]
+    #assignment_id = models.AutoField(primary_key=True)
+    student_id = models.ForeignKey('Student', on_delete=models.CASCADE)
+    course_id = models.ForeignKey('Course', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=assignment_status_choices, default='Current')
+    title = models.CharField(max_length=50, null=False)
+    description = models.TextField()
+    due_date = models.DateField()
+    grade = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
+
+    assignment_completed = [('Completed', 'Completed'), ('Incomplete', 'Incomplete')]
+    lesson = models.CharField(max_length=20, choices=assignment_completed, default='Incomplete')
+    exercise = models.CharField(max_length=20, choices=assignment_completed, default='Incomplete')
+    assessment = models.CharField(max_length=20, choices=assignment_completed, default='Incomplete')
+
+    def __str__(self):
+        return f"Assignment {self.name} - {self.section.course.name}"
+
+
+class AssignmentQuestion(models.Model):
+    question_id = models.AutoField(primary_key=True)
+    assignment_id = models.ForeignKey('Assignment', on_delete=models.CASCADE)
+    question = models.TextField()
+    answer = models.TextField()
+    correct_answer = models.TextField()
+    question_type = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"Question {self.question_id} - {self.assignment_id.title}"
