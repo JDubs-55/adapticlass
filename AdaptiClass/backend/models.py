@@ -33,44 +33,50 @@ class Course(models.Model):
         return str(self.id) + ' : ' + self.name
 
 
-class Section(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
-    name = models.CharField(max_length=50)
-    #details = models.TextField()
-
-    def __str__(self):
-        return f"{self.name} - {self.course.name}"
-
 
 class Assignment(models.Model):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='assignments')
-
-    assignment_status_choices = [('Completed', 'Completed'), ('Current', 'Current'), ('Upcoming', 'Upcoming')]
-    #assignment_id = models.AutoField(primary_key=True)
-    student_id = models.ForeignKey('Student', on_delete=models.CASCADE)
-    course_id = models.ForeignKey('Course', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=assignment_status_choices, default='Current')
-    title = models.CharField(max_length=50, null=False)
-    description = models.TextField()
+    assignment_status_choices = [('In Progress', 'In Progress'), ('Upcoming', 'Upcoming'), ('Past Due', 'Past Due')]
+    assignment_status = models.CharField(max_length = 20, choices = assignment_status_choices, default='Upcoming')
+    title = models.CharField(max_length=100, null=False)
     due_date = models.DateField()
-    grade = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.TextField()
+    completion = models.DecimalField(max_digits = 5, decimal_places = 2, default = 0.00)
+    num_questions = models.PositiveSmallIntegerField(default = 0)
+    answered_questions = models.PositiveSmallIntegerField(default = 0)
+    #grade = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
+    lesson_completion = models.BooleanField(default = False)
+    exercise_completion = models.BooleanField(default = False)
+    quiz_completion = models.BooleanField(default = False)
 
-    assignment_completed = [('Completed', 'Completed'), ('Incomplete', 'Incomplete')]
-    lesson = models.CharField(max_length=20, choices=assignment_completed, default='Incomplete')
-    exercise = models.CharField(max_length=20, choices=assignment_completed, default='Incomplete')
-    assessment = models.CharField(max_length=20, choices=assignment_completed, default='Incomplete')
-
-    def __str__(self):
-        return f"Assignment {self.name} - {self.section.course.name}"
+    def str(self):
+        return str(self.id) + " : " + self.title
 
 
-class AssignmentQuestion(models.Model):
-    question_id = models.AutoField(primary_key=True)
-    assignment_id = models.ForeignKey('Assignment', on_delete=models.CASCADE)
+class Question(models.Model):
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     question = models.TextField()
     answer = models.TextField()
-    correct_answer = models.TextField()
-    question_type = models.CharField(max_length=20)
 
-    def __str__(self):
-        return f"Question {self.question_id} - {self.assignment_id.title}"
+    def str(self):
+        return str(self.id) + " : " + self.question
+
+class AlternateQuestion(models.Model):
+    auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    question = models.TextField()
+    answer = models.TextField()
+
+    def str(self):
+        return str(self.id) + " : " + self.question
+    
+class AssignmentQuestion(models.Model):
+    auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
+    alt_question = models.ManyToManyField(AlternateQuestion, blank=True)
+    student_answer = models.TextField()
+    answered_correctly = models.BooleanField(default = False)
+
+    def str(self):
+        return str(self.id) + " : " + str(self.question_id)

@@ -221,138 +221,202 @@ class RemoveUsersFromCourseView(APIView):
 
 
 
-class SectionListView(APIView):
-    def get(self, request, course_pk):
-        sections = Section.objects.filter(course_id=course_pk)
-        serializer = SectionSerializer(sections, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, course_pk):
-        if request.user.role != 'Instructor':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        serializer = SectionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(course_id=course_pk)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class SectionDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return Section.objects.get(pk=pk)
-        except Section.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk):
-        section = self.get_object(pk)
-        serializer = SectionSerializer(section)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        if request.user.role != 'Instructor':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        section = self.get_object(pk)
-        serializer = SectionSerializer(section, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        if request.user.role != 'Instructor':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        section = self.get_object(pk)
-        section.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
 class AssignmentListView(APIView):
+
     def get(self, request, section_pk):
-        assignments = Assignment.objects.filter(section_id=section_pk)
+        assignments = Assignment.objects.all()
         serializer = AssignmentSerializer(assignments, many=True)
         return Response(serializer.data)
 
     def post(self, request, section_pk):
-        if request.user.role != 'Instructor':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = AssignmentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(section_id=section_pk)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AssignmentDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return Assignment.objects.get(pk=pk)
-        except Assignment.DoesNotExist:
-            raise Http404
 
+
+
+class AssignmentDetailView(APIView):
+
+
+    
     def get(self, request, pk):
-        assignment = self.get_object(pk)
+        assignment = get_object_or_404(Assignment, pk=pk)
         serializer = AssignmentSerializer(assignment)
         return Response(serializer.data)
+    
 
     def put(self, request, pk):
-        if request.user.role != 'Instructor':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        assignment = self.get_object(pk)
+        
+
+        assignment = get_object_or_404(Assignment, pk=pk)
+
         serializer = AssignmentSerializer(assignment, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
     def delete(self, request, pk):
-        if request.user.role != 'Instructor':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        assignment = self.get_object(pk)
+        
+        assignment = get_object_or_404(Assignment, pk=pk)
         assignment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+
+
+
+
+
+
 class AssignmentQuestionListView(APIView):
-    def get(self, request, assignment_pk):
-        questions = AssignmentQuestion.objects.filter(assignment_id=assignment_pk)
-        serializer = AssignmentQuestionSerializer(questions, many=True)
+
+
+    def get(self, request, section_pk):
+        assignments_questions = AssignmentQuestion.objects.all()
+        serializer = AssignmentQuestionSerializer(assignments_questions, many=True)
         return Response(serializer.data)
 
-    # Assuming a method for students to submit answers (simplified)
-    def post(self, request, assignment_pk):
-        if request.user.role != 'Student':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        # This should be modified to update an existing AssignmentQuestion with the student's answer
-        # Placeholder implementation
-        return Response({"message": "Answer submitted (placeholder)"})
-    
+
+    def post(self, request, section_pk):
+
+        serializer = AssignmentQuestionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 
 class AssignmentQuestionDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            return AssignmentQuestion.objects.get(pk=pk)
-        except AssignmentQuestion.DoesNotExist:
-            raise Http404
+   
 
     def get(self, request, pk):
-        question = self.get_object(pk)
-        serializer = AssignmentQuestionSerializer(question)
+        assignments_questions = get_object_or_404(AssignmentQuestion, pk=pk)
+        serializer = AssignmentQuestionSerializer(assignments_questions)
         return Response(serializer.data)
+    
 
     def put(self, request, pk):
-        if request.user.role != 'Student':
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
-        question = self.get_object(pk)
-        # Assuming the request.data contains the student's answer
-        serializer = AssignmentQuestionSerializer(question, data=request.data, partial=True)
+        
+
+        assignments_questions = get_object_or_404(AssignmentQuestion, pk=pk)
+
+        serializer = AssignmentQuestionSerializer(AssignmentQuestion, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def delete(self, request, pk):
+        
+        assignments_questions = get_object_or_404(AssignmentQuestion, pk=pk)
+        assignments_questions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+
+class QuestionListView(APIView):
+
+    def get(self, request, section_pk):
+        questions = Question.objects.all()
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data)
+
+
+    def post(self, request, section_pk):
+
+        serializer = QuestionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class QuestionDetailView(APIView):
+
+    def get(self, request, pk):
+        questions = get_object_or_404(Question, pk=pk)
+        serializer = QuestionSerializer(questions)
+        return Response(serializer.data)
+    
+
+    def put(self, request, pk):
+        
+
+        questions = get_object_or_404(Question, pk=pk)
+
+        serializer = QuestionSerializer(questions, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def delete(self, request, pk):
+        
+        questions = get_object_or_404(Question, pk=pk)
+        questions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+class AlternateQuestionListView(APIView):
+
+    def get(self, request, section_pk):
+        alt_questions = AlternateQuestion.objects.all()
+        serializer = AlternateQuestionSerializer(alt_questions, many=True)
+        return Response(serializer.data)
+
+
+    def post(self, request, section_pk):
+
+        serializer = AlternateQuestionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AlternateQuestionDetailView(APIView):
+
+    def get(self, request, pk):
+        alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
+        serializer = AlternateQuestionSerializer(alt_questions)
+        return Response(serializer.data)
+    
+
+    def put(self, request, pk):
+        
+
+        alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
+
+        serializer = AlternateQuestionSerializer(alt_questions, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def delete(self, request, pk):
+        
+        alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
+        alt_questions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
