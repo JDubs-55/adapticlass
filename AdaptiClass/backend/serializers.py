@@ -7,8 +7,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('auth_id', 'email', 'email_verified',
                   'auth0_name', 'display_name', 'picture', 'role')
-        read_only_fields = ('auth_id', 'email', 'email_verified',
-                            'auth0_name', 'picture', 'role')
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -21,15 +19,11 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_instructor(self, obj):
         return [instructor.display_name for instructor in obj.users.all() if instructor.role == 'Instructor']
 
-    # TODO: Dont foget to add Grade and Section fields after creation
 
     class Meta:
         model = Course
         fields = ('id', 'status', 'name', 'instructor',
                   'students', 'description', 'course_image')
-        read_only_fields = ('id', 'status', 'name',
-                            'description', 'course_image')
-
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

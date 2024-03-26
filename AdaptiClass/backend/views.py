@@ -151,6 +151,8 @@ class CourseDetailView(APIView):
                 new_course_image = request.data.get('course_image')
                 course.course_image = new_course_image
 
+            serializer.save()
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
