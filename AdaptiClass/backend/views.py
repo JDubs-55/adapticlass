@@ -383,7 +383,7 @@ class AlternateQuestionDetailView(APIView):
 
 class ChatbotView(APIView):
     def post(self, request):
-        chat_prompt = request.data.get('problem')
+        chat_prompt = request.data.get('question')
 
         genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
         generation_config = {
@@ -426,7 +426,7 @@ class ChatbotView(APIView):
         
 class ProblemGeneratorView(APIView):
     def post(self, request):
-        chat_prompt = request.data.get('problem')
+        chat_prompt = request.data.get('question')
         genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
         generation_config = {
             "temperature": 0.9,
@@ -455,7 +455,7 @@ class ProblemGeneratorView(APIView):
         model = genai.GenerativeModel(model_name="gemini-1.0-pro",
                                       generation_config=generation_config,
                                       safety_settings=safety_settings)
-        directions = "For the given Algebra 1 problem, provide a similar but different problem with the same type, format, and difficulty. give the problem and the answer. they should be clearly labled Problem: put_problem_here Answer: put_answer_here. If the current problem is not related to math, respond with the word 'No' and nothing else - I need this for error handling. Current Problem: "
+        directions = "For the given Algebra 1 problem, provide one similar but different problem with the same type, format, and difficulty. give the problem and the answer. they should be clearly labled Problem: put_problem_here Answer: put_answer_here. If the current problem is not related to math, respond with the word 'No' and nothing else - I need this for error handling. Current Problem: "
         full_prompt = directions + chat_prompt
         prompt_parts = [{"text": full_prompt}]
         response = model.generate_content(prompt_parts)
@@ -466,9 +466,18 @@ class ProblemGeneratorView(APIView):
                 return Response({'error': 'The provided problem is not related to Algebra 1.'}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                return Response({'newproblem': response_text}, status=status.HTTP_200_OK)
+                problem_start = response_text.find("Problem: ") + len("Problem: ")
+                answer_start = response_text.find("Answer: ") + len("Answer: ")
+                if problem_start > len("Problem: ") - 1 and answer_start > len("Answer: ") - 1:
+                    problem_end = response_text.find("Answer: ") - 1
+                    answer_end = len(response_text)
+                    problem = response_text[problem_start:problem_end].strip()
+                    answer = response_text[answer_start:answer_end].strip()
+                    return Response({'question': problem, 'answer': answer}, status=status.HTTP_200_OK)
+                else:
+                    raise ValueError('Parsing error')
             except ValueError:
-                return Response({'error': 'Error getting the response for no good reason.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Error parsing the response.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': 'No response generated or the prompt was blocked.'}, 
                             status=status.HTTP_400_BAD_REQUEST)
