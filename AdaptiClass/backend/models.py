@@ -77,3 +77,13 @@ class AssignmentQuestion(models.Model):
 
     def str(self):
         return str(self.id) + " : " + str(self.question_id)
+    
+
+class Chat(models.Model):
+    auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    question = models.TextField()
+    solution = models.TextField()
+
+    def str(self):
+        return str(self.id) + " : " + self.solution
