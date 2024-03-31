@@ -385,6 +385,9 @@ class ChatbotView(APIView):
     def post(self, request):
         chat_prompt = request.data.get('question')
 
+        if chat_prompt is None:
+            return Response({'error': 'Question is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
         genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
         generation_config = {
             "temperature": 0.9,
