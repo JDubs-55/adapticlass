@@ -85,5 +85,5 @@ class Chat(models.Model):
     question = models.TextField()
     solution = models.TextField()
 
-    def str(self):
+    def __str__(self):
         return str(self.id) + " : " + self.solution
