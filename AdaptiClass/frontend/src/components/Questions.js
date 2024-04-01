@@ -9,7 +9,7 @@ const Wrapper = styled.div`
   margin: 20px;
   width: 100%;
   max-width: 800px; // Original size
-  padding: 20px; // Padding moved from Content to Wrapper
+  padding: 20px; 
   position: relative; 
 `;
 
@@ -42,7 +42,7 @@ const FormWrapper = styled.div`
 const ButtonWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%; // Ensure this wrapper fills its parent so buttons can use max-width effectively
+  width: 100%; 
 `;
 
 const Input = styled.input`
@@ -142,7 +142,7 @@ const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => 
       setIsCorrect(null);
       setUserAnswer('');
     } else {
-        // Edit Completed button function
+       
       console.log("Completed all problems.");
       setQuizCompleted(true); 
     }
