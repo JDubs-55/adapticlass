@@ -15,7 +15,7 @@ class User(models.Model):
 
     def __str__(self):
         return self.auth_id + " : " + self.email
-
+    
 
 class Course(models.Model):
     status_choices = [('Current', 'Current'), ('Completed', 'Completed')]
@@ -23,11 +23,18 @@ class Course(models.Model):
     name = models.CharField(max_length=50, null=False)
     users = models.ManyToManyField(User, blank=True)
     description = models.TextField(blank=True)
-    # grade = models.ManyToManyField(Grade) -- TODO: Implement after Grade model is created
     course_image = models.URLField(max_length=300, blank=True)
 
     def __str__(self):
         return str(self.id) + ' : ' + self.name
+    
+class CourseGrade(models.Model):
+    auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    grade = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
+
+    def __str__(self):
+        return self.auth_id.auth_id + " : [" + str(self.course_id) + " : " + str(self.grade) + "]"
 
 
 class Assignment(models.Model):
@@ -41,13 +48,21 @@ class Assignment(models.Model):
     completion = models.DecimalField(max_digits = 5, decimal_places = 2, default = 0.00)
     num_questions = models.PositiveSmallIntegerField(default = 0)
     answered_questions = models.PositiveSmallIntegerField(default = 0)
-    #grade = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
     lesson_completion = models.BooleanField(default = False)
     exercise_completion = models.BooleanField(default = False)
     quiz_completion = models.BooleanField(default = False)
 
-    def str(self):
+    def __str__(self):
         return str(self.id) + " : " + self.title
+    
+class AssignmentGrade(models.Model):
+    auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    grade = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
+
+    def __str__(self):
+        return self.auth_id.auth_id + " : [" + str(self.assignment_id) + " : " + str(self.grade) + "]"
 
 
 class Question(models.Model):
@@ -55,7 +70,7 @@ class Question(models.Model):
     question = models.TextField()
     answer = models.TextField()
 
-    def str(self):
+    def __str__(self):
         return str(self.id) + " : " + self.question
 
 class AlternateQuestion(models.Model):
@@ -64,7 +79,7 @@ class AlternateQuestion(models.Model):
     question = models.TextField()
     answer = models.TextField()
 
-    def str(self):
+    def __str__(self):
         return str(self.id) + " : " + self.question
     
 class AssignmentQuestion(models.Model):
@@ -75,7 +90,7 @@ class AssignmentQuestion(models.Model):
     student_answer = models.TextField()
     answered_correctly = models.BooleanField(default = False)
 
-    def str(self):
+    def __str__(self):
         return str(self.id) + " : " + str(self.question_id)
     
 
