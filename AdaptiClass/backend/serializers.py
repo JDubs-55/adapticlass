@@ -24,6 +24,16 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = ('id', 'status', 'name', 'instructor',
                   'students', 'description', 'course_image')
+        
+class CourseGradeSerializer(serializers.ModelSerializer):
+    auth_id = serializers.SerializerMethodField('get_auth_id')
+
+    def get_auth_id(self, obj):
+        return obj.auth_id.auth_id
+
+    class Meta:
+        model = CourseGrade
+        fields = ('auth_id', 'course_id', 'grade')
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
@@ -38,20 +48,24 @@ class AssignmentSerializer(serializers.ModelSerializer):
         'id', 'assignment_status', 'course_id', 'title', 'due_date', 'created_by', 'description', 'completion', 'num_questions', 'answered_questions',
         'lesson_completion', 'exercise_completion', 'quiz_completion')
 
-
-class AssignmentQuestionSerializer(serializers.ModelSerializer):
+class AssignmentGradeSerializer(serializers.ModelSerializer):
     auth_id = serializers.SerializerMethodField('get_auth_id')
-    assignment_id = serializers.SerializerMethodField('get_ass_id')
 
     def get_auth_id(self, obj):
         return obj.auth_id.auth_id
-    
-    def get_ass_id(self, obj):
-        return obj.question_id.assignment_id.id
+
+    class Meta:
+        model = AssignmentGrade
+        fields = ('auth_id', 'course_id', 'assignment_id', 'grade')
+
+
+class AssignmentQuestionSerializer(serializers.ModelSerializer):
+    auth_id = serializers.SerializerMethodField('get_auth_id')
+
+    def get_auth_id(self, obj):
+        return obj.auth_id.auth_id
 
     
-
-
     class Meta:
         model = AssignmentQuestion
         fields = ('id', 'auth_id', 'assignment_id', 'question_id', 'alt_question', 'student_answer', 'answered_correctly')
