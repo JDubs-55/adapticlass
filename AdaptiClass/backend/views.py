@@ -472,3 +472,29 @@ class ProblemGeneratorView(APIView):
         else:
             return Response({'error': 'No response generated or the prompt was blocked.'}, 
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+# Engagement Data Views
+class EngagementDataAPIView(APIView):
+    def get(self, request):
+        try:
+            all_data = EngagementData.objects.all()
+            serializer = EngagementDataSerializer(all_data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except EngagementData.DoesNotExist:
+            return Response({'error': 'No engagement data'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def post(self, request):
+        serializer = EngagementDataSerializer(data=request.data)
+        if serializer.is_valid():
+            engagement_data = serializer.save()
+            
+            # Assuming engagement_periods data is present in request.data
+            period_data = request.data.get('engagement_periods', [])
+            period_serializer = EngagementPeriodSerializer(data=period_data, many=True, context={'engagement_data': engagement_data})
+            
+            if period_serializer.is_valid():
+                period_serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

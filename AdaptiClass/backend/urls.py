@@ -24,5 +24,7 @@ urlpatterns = [
 
     path('chat/', ChatbotView.as_view(), name='chatbot_view'),
     path('problemgenerator/', ProblemGeneratorView.as_view(), name='generator_view'),
+    
+    path('engagementdata/', EngagementDataAPIView.as_view(), name='engagementdata_list_view')
 ]
 
