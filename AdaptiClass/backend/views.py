@@ -130,8 +130,11 @@ class CourseDetailView(APIView):
                 new_status = request.data.get('status')
                 course.status = new_status
 
-            if 'users' in request.data:
-                user_id = request.data['users']
+            if 'users' in request.data or 'user' in request.data:
+                if 'user' in request.data:
+                    user_id = request.data['user']
+                else:    
+                    user_id = request.data['users']
                 try:
                     user = User.objects.get(auth_id=user_id)
                 except User.DoesNotExist:
@@ -160,6 +163,23 @@ class CourseDetailView(APIView):
         course = get_object_or_404(Course, pk=pk)
         course.delete()
         return Response({"message": f"Course '{course.name}' deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+class UserEnrollmentView(APIView):
+    def get(self, request):
+        user = request.query_params.get('auth_id')
+        if user:
+            try:
+                user_courses = User.objects.get(auth_id=user).course_set.all()
+                courses_data = []
+                for course in user_courses:
+                    course_data = {"course_id" : course.id,
+                                   "name" : course.name}
+                    courses_data.append(course_data)
+                return Response(courses_data)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+        else:
+            return Response({"error": "User ID required"}, status=400)
 
 
 class RemoveUsersFromCourseView(APIView):
