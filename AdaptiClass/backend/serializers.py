@@ -100,5 +100,5 @@ class EngagementDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EngagementData
-        fields = ['id', 'start', 'end', 'total_time', 'engagement_periods']
+        fields = ['id', 'start', 'end', 'total_time', 'engaged_time', 'engagement_periods']
         

@@ -1,14 +1,19 @@
 import React, {useEffect, useState} from "react";
+import axios from "axios";
 
 const WebGazerComponent = ({component: Component}) => {
-    const currentDateTimeString = new Date().toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-    const currentDateTimeWithTimeZone = new Date(currentDateTimeString);
-    
+
     useEffect(()=>{
+
+        const currentDateTimeString = new Date().toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+        const currentDateTimeWithTimeZone = new Date(currentDateTimeString);
+
+        const isInitialized = true;
 
         const webgazer = window.webgazer;
         var webgazerStartTime = 0;
         var webgazerEndTime = 0;
+        var engagedTime = 0;
         var blockState = "engaged";
         var blockStartTime = 0;
         var blocks = [];
@@ -34,6 +39,7 @@ const WebGazerComponent = ({component: Component}) => {
                 //Filtering noise - change must have lasted at least 1 second. 
                 if (blockDuration > 5000) {
                     blocks.push({ state: "engaged", start: blockStartTime, duration: blockDuration, end: clock })
+                    engagedTime += blockDuration;
                     blockState = "disengaged";
                     blockStartTime = clock;
                 }
@@ -54,13 +60,13 @@ const WebGazerComponent = ({component: Component}) => {
 
         }).begin();
 
-        const formatData = (startDatetime, endTime, engagementPeriods) => {
+        const formatData = (startDatetime, endTime, engagedTime, engagementPeriods) => {
 
             const dataToSend = {
                 "start": startDatetime,
                 "end": new Date(startDatetime.getTime() + endTime),
                 "total_time": endTime,
-                
+                "engaged_time": engagedTime,
                 "engagement_periods": engagementPeriods
             };
 
@@ -105,16 +111,32 @@ const WebGazerComponent = ({component: Component}) => {
 
         }
 
+        const handleDataSubmission = async (engagementData) => {
+        
+            try {
+                const response = await axios.post('http://127.0.0.1:8000/engagementdata/', engagementData);
+                console.log(response.data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
         return () => {
-            //document.getElementById("webgazerVideoContainer").remove();
+            
             removeWebgazer();
+
+            //If the last block is engaged, add its duration to the total engagement time. 
+            if (blockState === "engaged"){
+                engagedTime += webgazerEndTime-blockStartTime;
+            }
 
             //Add the last block
             blocks.push({ state: blockState, start: blockStartTime, duration: webgazerEndTime-blockStartTime, end: webgazerEndTime })
-            console.log(formatData(currentDateTimeWithTimeZone, webgazerEndTime, blocks));
+
+            handleDataSubmission(formatData(currentDateTimeWithTimeZone, webgazerEndTime, engagedTime, blocks));
+            
         };
     },[]);
-
 
     return(
         <div>
