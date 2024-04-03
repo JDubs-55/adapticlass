@@ -94,3 +94,25 @@ class AlternateQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'auth_id', 'assignment_id', 'question', 'answer'
         )
+        
+        
+# Engagement Data Serializers 
+class EngagementPeriodSerializer(serializers.ModelSerializer):
+    engagement_data = serializers.PrimaryKeyRelatedField(read_only=True)
+    
+    class Meta:
+        model = EngagementPeriod
+        fields = ['id', 'engagement_data', 'state', 'start', 'end', 'duration']
+    
+    def create(self, validated_data):
+        engagement_data = self.context['engagement_data']
+        engagement_period = EngagementPeriod.objects.create(engagement_data=engagement_data, **validated_data)
+        return engagement_period
+
+class EngagementDataSerializer(serializers.ModelSerializer):
+    engagement_periods = EngagementPeriodSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = EngagementData
+        fields = ['id', 'start', 'end', 'total_time', 'engaged_time', 'engagement_periods']
+        

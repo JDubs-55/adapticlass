@@ -102,3 +102,18 @@ class Chat(models.Model):
 
     def __str__(self):
         return str(self.id) + " : " + self.solution
+    
+
+# Engagement Data Models
+class EngagementData(models.Model):
+    start = models.DateTimeField()
+    end = models.DateTimeField()
+    total_time = models.FloatField()
+    engaged_time = models.FloatField(default=0)
+
+class EngagementPeriod(models.Model):
+    engagement_data = models.ForeignKey(EngagementData, on_delete=models.CASCADE, related_name='engagement_periods')
+    state = models.CharField(max_length=10)
+    start = models.FloatField()
+    duration = models.FloatField()
+    end = models.FloatField()
