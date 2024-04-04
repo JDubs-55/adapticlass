@@ -1,0 +1,79 @@
+{
+    "courses": [
+      {
+        "id": "algebra1",
+        "name": "Algebra I",
+        "overallGrade": "A",
+        "overallPercent": 95,
+        "grades": [
+          {
+            "title": "Quiz 0 - Syllabus Quiz",
+            "dueDate": "Sep 9",
+            "score": "100%",
+            "grade": "A+"
+          },
+          {
+            "title": "Quiz 1 - Distributive Property",
+            "dueDate": "Sep 9",
+            "score": "80%",
+            "grade": "B-"
+          }
+        ],
+        "instructorFeedback": {
+          "instructorName": "Mr. Smith",
+          "score": 9,
+          "feedback": "Outstanding performance throughout the semester. Keep up the great work!"
+        },
+        "timeSpentPerDay": {
+          "Monday": {"focus": 90, "notFocus": 30},
+          "Tuesday": {"focus": 60, "notFocus": 30},
+          "Wednesday": {"focus": 45, "notFocus": 15},
+          "Thursday": {"focus": 30, "notFocus": 15},
+          "Friday": {"focus": 20, "notFocus": 10},
+          "Saturday": {"focus": 0, "notFocus": 0},
+          "Sunday": {"focus": 0, "notFocus": 0}
+        }
+      },
+      {
+        "id": "algebra2",
+        "name": "Algebra II",
+        "overallGrade": "B",
+        "overallPercent": 85,
+        "grades": [
+          {
+            "title": "Quiz 1 - Functions Overview",
+            "dueDate": "Oct 5",
+            "score": "90%",
+            "grade": "A"
+          },
+          {
+            "title": "Homework 1 - Quadratic Equations",
+            "dueDate": "Oct 12",
+            "score": "75%",
+            "grade": "C"
+          },
+          {
+            "title": "Project 1 - Analyzing Polynomial Functions",
+            "dueDate": "Nov 1",
+            "score": "85%",
+            "grade": "B"
+          }
+        ],
+        "instructorFeedback": {
+          "instructorName": "Ms. Johnson",
+          "score": 8,
+          "feedback": "Very good understanding of course material, but there's room for improvement in project work."
+        },
+        "timeSpentPerDay": {
+          "Monday": {"focus": 45, "notFocus": 15},
+          "Tuesday": {"focus": 90, "notFocus": 30},
+          "Wednesday": {"focus": 60, "notFocus": 30},
+          "Thursday": {"focus": 20, "notFocus": 10},
+          "Friday": {"focus": 30, "notFocus": 15},
+          "Saturday": {"focus": 0, "notFocus": 0},
+          "Sunday": {"focus": 0, "notFocus": 0}
+        }
+      }
+    ]
+  }
+  
