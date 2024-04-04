@@ -3,6 +3,7 @@ import styled from "styled-components";
 //import { FilterIcon } from "../assets/Icons";
 import CourseCard from "../components/CourseCard";
 import courseData from "../mockRequests/courses.json";
+import axios from "axios";
 
 const Content = styled.div`
   width: calc(100% - 36px); /* 18px on both sides */
@@ -127,11 +128,16 @@ const CourseContent = () => {
 
   //Retrieve data from server
   useEffect(() => {
-    const fakeApiCall = async () => {
-      setJsonData(courseData);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/enrollments/${sessionStorage.getItem('user_id')}/`);
+        setJsonData(response.data);
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-    fakeApiCall();
+    fetchData();
   }, []);
 
   //Filter Json for Courses with status=="Completed"

@@ -97,6 +97,9 @@ const TopBarUserProfile = () => {
         try {
           const response = await axios.get(`http://127.0.0.1:8000/users/${userAuthID}/`);
           setUserData(response.data);
+
+          //Store the user's id for later use in endpoint calls
+          sessionStorage.setItem('user_id', response.data['id'])
         } catch (error) {
           console.log(error);
         }
