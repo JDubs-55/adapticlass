@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 
 const ChatContainer = styled.div`
   width: 300px;
-  height: calc(100vh - 100px);
-  max-height: 800px;
+  height: calc(100vh - 180px);
+  max-height: 700px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -20,7 +22,6 @@ const ChatTitle = styled.h2`
   margin-bottom: 20px; 
   text-align: center; 
 `;
-
 
 const Messages = styled.div`
   flex-grow: 1;
@@ -54,82 +55,103 @@ const InputArea = styled.input`
 `;
 
 const MessageBubble = styled.div`
-  background-color: #f0f0f0; 
-  border-radius: 20px; 
-  padding: 10px 20px; 
-  margin-bottom: 10px; 
-  max-width: 80%; 
-  word-wrap: break-word; 
-  box-shadow: 0px 3px 6px #00000029; 
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  max-width: 80%;
+  word-wrap: break-word;
+  box-shadow: 0px 3px 6px #00000029;
 
   &:last-child {
-    margin-bottom: 0; 
+    margin-bottom: 0;
   }
 
-  
-  align-self: flex-start; 
-  background-color: #e0e0e0; 
+  align-self: flex-start;
+  background-color: #e0e0e0;
 
   &.sent {
-    align-self: flex-end; 
+    align-self: flex-end;
     background-color: #4caf50;
-    color: white; 
+    color: white;
+  }
+
+  pre {
+    background-color: #f5f5f5;
+    padding: 10px;
+    overflow-x: auto;
+  }
+  code {
+    background-color: #f5f5f5;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  strong {
+    font-weight: bold;
   }
 `;
-
-
 
 const Form = styled.form`
   margin-top: auto;
 `;
 
 const ChatBox = () => {
-    const [messages, setMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
+  const [messages, setMessages] = useState([]);
+
+  const sendMessage = (event) => {
+    event.preventDefault();
+    const userMessage = newMessage.trim();
+    if (!userMessage) return;
   
-    const sendMessage = (event) => {
-      event.preventDefault();
-      if (!newMessage.trim()) return;
-      setMessages([...messages, newMessage]);
-      setNewMessage('');
-    };
+    // Display the user's question immediately in the chat
+    const messageToShow = { text: userMessage, type: 'sent' };
+    setMessages([...messages, messageToShow]);
   
-    return (
-      <ChatContainer>
-        <ChatTitle>Need help? Ask me a question</ChatTitle>
-        <Messages>
-          {messages.map((message, index) => (
-            <MessageBubble key={index}>{message}</MessageBubble>
-          ))}
-        </Messages>
-        <Form onSubmit={sendMessage}>
-          <InputArea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-          />
-        </Form>
-      </ChatContainer>
-    );
+    // Reset the input field
+    setNewMessage('');
+  
+    // Making the call to the Django backend
+    axios.post('http://localhost:8000/chat/', { question: userMessage })
+      .then(response => {
+        // Check for 'solution' in the response data
+        if(response.data.solution) {
+          const reply = response.data.solution;
+          setMessages(messages => [...messages, { text: reply, type: 'received' }]);
+        } else if(response.data.error) {
+          // If the backend returns an error message, display it
+          setMessages(messages => [...messages, { text: response.data.error, type: 'received' }]);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching response:', error);
+        // Handle cases where the error response contains an explicit message
+        const errorMessage = error.response && error.response.data.error ? error.response.data.error : 'Sorry, there was a problem getting a response.';
+        setMessages(messages => [...messages, { text: errorMessage, type: 'received' }]);
+      });
   };
-  
-  
+
+  const [newMessage, setNewMessage] = useState('');
+
+  return (
+    <ChatContainer>
+      <ChatTitle>Need help? Let's solve it together</ChatTitle>
+      <Messages>
+        {messages.map((message, index) => (
+          <MessageBubble key={index} className={message.type}>
+            <ReactMarkdown>{message.text}</ReactMarkdown>
+          </MessageBubble>
+        ))}
+      </Messages>
+      <Form onSubmit={sendMessage}>
+        <InputArea
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Enter the problem here..."
+        />
+      </Form>
+    </ChatContainer>
+  );
+};
 
 export default ChatBox;
-
-/* const sendMessage = async (event) => {
-   event.preventDefault();
-    if (!newMessage.trim()) return;
-  
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: newMessage }),
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-  */

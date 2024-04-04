@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.http import Http404
 from rest_framework import generics
 from rest_framework import status
@@ -9,6 +10,7 @@ from . serializers import *
 from . models import *
 from django.shortcuts import get_object_or_404
 import google.generativeai as genai
+import statistics
 
 # Create your views here.
 
@@ -129,8 +131,11 @@ class CourseDetailView(APIView):
                 new_status = request.data.get('status')
                 course.status = new_status
 
-            if 'users' in request.data:
-                user_id = request.data['users']
+            if 'users' in request.data or 'user' in request.data:
+                if 'user' in request.data:
+                    user_id = request.data['user']
+                else:    
+                    user_id = request.data['users']
                 try:
                     user = User.objects.get(auth_id=user_id)
                 except User.DoesNotExist:
@@ -144,29 +149,12 @@ class CourseDetailView(APIView):
                 new_description = request.data.get('description')
                 course.description = new_description
 
-            # TODO: Implement grade functionality here to update grade based on average of assignment scores
 
             if 'course_image' in request.data:
                 new_course_image = request.data.get('course_image')
                 course.course_image = new_course_image
 
-            # TODO: Implement adding sections to courses here
-
-            # Handle sections
-            # if 'sections' in request.data:
-            #     sections_data = request.data['sections']
-            #     for section_data in sections_data:
-            #         # Remove the 'course' field from each section data
-            #         if 'course' in section_data:
-            #             del section_data['course']
-            #     section_serializer = SectionSerializer(data=sections_data, many=True)
-            #     if section_serializer.is_valid():
-            #         sections = section_serializer.save(course=course)
-            #         serializer.instance.sections.set(sections)
-            #     else:
-            #         return Response(section_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-            # serializer.save()
+            serializer.save()
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -175,6 +163,74 @@ class CourseDetailView(APIView):
         course = get_object_or_404(Course, pk=pk)
         course.delete()
         return Response({"message": f"Course '{course.name}' deleted"}, status=status.HTTP_204_NO_CONTENT)
+    
+class CourseGradeView(APIView):
+    def calculate_and_update_grade(self, user, course):
+        assignments = Assignment.objects.filter(course_id=course.id)
+        assignment_grades = []
+        for assignment in assignments:
+            try:
+                assignment_grade = AssignmentGrade.objects.get(auth_id=user, course_id=course.id, assignment_id=assignment.id).grade
+                assignment_grades.append(assignment_grade)
+            except AssignmentGrade.DoesNotExist:
+                return Response({"error": f"Grade not found for assignment {assignment.id}"}, status=status.HTTP_404_NOT_FOUND)
+
+        average_grade = statistics.mean(assignment_grades) if assignment_grades else 0
+
+        # Update or create CourseGrade instance
+        course_grade, _ = CourseGrade.objects.update_or_create(
+            auth_id=user,
+            course_id=course,
+            defaults={'grade': average_grade}
+        )
+        serializer = CourseGradeSerializer(course_grade)
+        return serializer.data
+
+    def get(self, request, course_name):
+        user_id = request.query_params.get('auth_id')
+        try:
+            user = User.objects.get(auth_id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            course = Course.objects.get(name=course_name)
+        except Course.DoesNotExist:
+            return Response({"error": "Course not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate and update grade
+        course_grade_data = self.calculate_and_update_grade(user, course)
+        return Response(course_grade_data)
+            
+
+
+class UserEnrollmentView(APIView):
+    def get(self, request):
+        user = request.query_params.get('auth_id')
+        if user:
+            try:
+                user_obj = get_object_or_404(User, auth_id=user)
+                user_courses = user_obj.course_set.all()
+                courses_data = []
+                for course in user_courses:
+                    try:
+                        grade_obj = CourseGrade.objects.get(auth_id=user_obj, course_id=course.id)
+                        grade = grade_obj.grade
+                    except CourseGrade.DoesNotExist:
+                        grade = None
+                        print(f"No CourseGrade entry found for user {user_obj.auth_id} and course {course.id}")
+
+                    course_data = {
+                        "course_id": course.id,
+                        "name": course.name,
+                        "grade": grade
+                    }
+                    courses_data.append(course_data)
+                return Response(courses_data)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+        else:
+            return Response({"error": "User ID required"}, status=400)
 
 
 class RemoveUsersFromCourseView(APIView):
@@ -220,93 +276,271 @@ class RemoveUsersFromCourseView(APIView):
         return Response(message, status=status.HTTP_200_OK)
 
 
-# sections and assignments view
+class AssignmentListView(APIView):
+    def get(self, request):
+        course_name = request.query_params.get('course_name')
+        if course_name:
+            try:
+                course = Course.objects.get(name=course_name)
+                assignments = Assignment.objects.filter(course_id=course)
+                serializer = AssignmentSerializer(assignments, many=True)
+                url = reverse('course_assignment_view', kwargs={'course_name': course_name})
+                return redirect(url)
+            except Course.DoesNotExist:
+                return Response({"error": "Course not found"}, status=404)
+        else:
+            assignments = Assignment.objects.all()
+            serializer = AssignmentSerializer(assignments, many=True)
+            return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AssignmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class AssignmentDetailView(APIView):
+    def get(self, request, pk):
+        assignment = get_object_or_404(Assignment, pk=pk)
+        serializer = AssignmentSerializer(assignment)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+
+        assignment = get_object_or_404(Assignment, pk=pk)
+
+        serializer = AssignmentSerializer(assignment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+
+        assignment = get_object_or_404(Assignment, pk=pk)
+        assignment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class CourseAssignmentListView(APIView):
+    def get(self, request, course_name):
+        course = get_object_or_404(Course, name=course_name)
+        assignments = Assignment.objects.filter(course_id=course)
+        serializer = AssignmentSerializer(assignments, many=True)
+        return Response(serializer.data)
+    
+
+class AssignmentGradesByCourseView(APIView):
+    def get(self, request, course_name):
+        user_id = request.query_params.get('auth_id')
+        user = User.objects.get(auth_id=user_id)
+        if user:
+            try:
+                course = Course.objects.get(name=course_name)
+                if not course:
+                    return Response({"error": "Course not found"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                assignments = Assignment.objects.filter(course_id=course.id)
+                assignment_grades = []
+                for assignment in assignments:
+                    try:
+                        assignment_grade = AssignmentGrade.objects.get(auth_id=user, course_id=course.id, assignment_id=assignment.id).grade
+                        assignment_grade_data = {
+                            "assignment_id": assignment.id,
+                            "grade": assignment_grade
+                        }
+                        assignment_grades.append(assignment_grade_data)
+                    except AssignmentGrade.DoesNotExist:
+                        return Response({"error": f"Grade not found for assignment {assignment.id}"}, status=status.HTTP_404_NOT_FOUND)
+
+                return Response(assignment_grades)
+            except AssignmentGrade.DoesNotExist:
+                return Response({"error": "Grade not found"}, status=404)
+        else:
+            return Response({"error": "User ID required"}, status=400)
+    
+
+class AssignmentGradeView(APIView):
+    @staticmethod
+    def calculate_assignment_grade(assignment_id):
+        # Retrieve all AssignmentQuestion instances for the given assignment_id
+        assignment_questions = AssignmentQuestion.objects.filter(assignment_id=assignment_id)
+        
+        # Count the number of questions and correctly answered questions
+        total_questions = len(assignment_questions)
+        correctly_answered_questions = sum(question.answered_correctly for question in assignment_questions)
+        
+        # Calculate the grade (percentage of correctly answered questions)
+        grade = (correctly_answered_questions / total_questions) * 100 if total_questions > 0 else 0
+        
+        return grade
+
+    def get(self, request, course_name, assignment_id):
+        user_id = request.query_params.get('auth_id')
+        
+        try:
+            user = User.objects.get(auth_id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            course = Course.objects.get(name=course_name)
+            assignment = Assignment.objects.get(id=assignment_id, course_id=course.id)
+        except (Course.DoesNotExist, Assignment.DoesNotExist):
+            return Response({"error": "Course or Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Calculate the grade for the assignment
+        assignment_grade = self.calculate_assignment_grade(assignment_id)
+        
+        # Update or create AssignmentGrade instance
+        assignment_grade_obj, _ = AssignmentGrade.objects.update_or_create(
+            auth_id=user,
+            course_id=course,
+            assignment_id=assignment,
+            defaults={'grade': assignment_grade}
+        )
+        
+        # Serialize the AssignmentGrade instance
+        serializer = AssignmentGradeSerializer(assignment_grade_obj)
+        return Response(serializer.data)
 
 
-# class SectionDetailView(APIView):
-#     def get_object(self, course_id, section_id):
-#         try:
-#             return Section.objects.get(course_id=course_id, id=section_id)
-#         except Section.DoesNotExist:
-#             raise Http404("Section does not exist")
+class AssignmentQuestionListView(APIView):
 
-#     def get(self, request, course_id, section_id):
-#         section = self.get_object(course_id, section_id)
-#         serializer = SectionSerializer(section)
-#         return Response(serializer.data)
+    def get(self, request):
+        assignments_questions = AssignmentQuestion.objects.all()
+        serializer = AssignmentQuestionSerializer(
+            assignments_questions, many=True)
+        return Response(serializer.data)
 
-#     def put(self, request, course_id, section_id):
-#         section = self.get_object(course_id, section_id)
-#         serializer = SectionSerializer(section, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
 
-# class AssignmentDetailView(APIView):
-#     def get_object(self, section_id, assignment_id):
-#         try:
-#             return Assignment.objects.get(section_id=section_id, id=assignment_id)
-#         except Assignment.DoesNotExist:
-#             raise Http404("Assignment does not exist")
-
-#     def get(self, request, section_id, assignment_id):
-#         assignment = self.get_object(section_id, assignment_id)
-#         serializer = AssignmentSerializer(assignment)
-#         return Response(serializer.data)
-
-#     def put(self, request, section_id, assignment_id):
-#         assignment = self.get_object(section_id, assignment_id)
-#         serializer = AssignmentSerializer(assignment, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# # Updated views.py
-# class SectionListView(APIView):
-#     def get(self, request, course_name):
-#         # Retrieve sections for the specified course
-#         sections = Section.objects.filter(course__name=course_name)
-#         serializer = SectionSerializer(sections, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request, course_name):
-#         # Create a new section under the specified course
-#         data = request.data.copy()
-#         data['course'] = course_name  # Assign the course name to the section
-#         serializer = SectionSerializer(data=data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = AssignmentQuestionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class AssignmentListView(APIView):
-#     def post(self, request):
-#         section_id = request.data.get('section')
-#         if not section_id:
-#             return Response({"error": "Section ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+class AssignmentQuestionDetailView(APIView):
 
-#         try:
-#             section = Section.objects.get(id=section_id)
-#         except Section.DoesNotExist:
-#             return Response({"error": "Section not found"}, status=status.HTTP_404_NOT_FOUND)
+    def get(self, request, assignment_id, question_id):
+        assignments_questions = get_object_or_404(AssignmentQuestion, assignment_id=assignment_id, question_id=question_id)
+        serializer = AssignmentQuestionSerializer(assignments_questions)
+        return Response(serializer.data)
 
-#         # Check if the user making the request is associated with the course as an instructor
-#         if request.user.instructor.courses.filter(id=section.course.id).exists():
-#             serializer = AssignmentSerializer(data=request.data)
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({"error": "You do not have permission to create assignments for this section"}, status=status.HTTP_403_FORBIDDEN)
+    def put(self, request, assignment_id, question_id):
+        assignments_questions = get_object_or_404(AssignmentQuestion, assignment_id=assignment_id, question_id=question_id)
 
+        serializer = AssignmentQuestionSerializer(
+            assignments_questions, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, assignment_id, question_id):
+        assignments_questions = get_object_or_404(AssignmentQuestion, assignment_id=assignment_id, question_id=question_id)
+        assignments_questions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    
+class AssignmentQuestionByIDView(APIView):
+    def get(self, request, assignment_id):
+        assignment_questions = AssignmentQuestion.objects.filter(assignment_id=assignment_id).all()
+        if not assignment_questions:
+            return Response({"error": "Assignment not found."}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = AssignmentQuestionSerializer(assignment_questions, many=True)
+        return Response(serializer.data)
+
+
+class QuestionListView(APIView):
+
+    def get(self, request):
+        questions = Question.objects.all()
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+
+        serializer = QuestionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class QuestionDetailView(APIView):
+
+    def get(self, request, pk):
+        questions = get_object_or_404(Question, pk=pk)
+        serializer = QuestionSerializer(questions)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+
+        questions = get_object_or_404(Question, pk=pk)
+
+        serializer = QuestionSerializer(questions, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+
+        questions = get_object_or_404(Question, pk=pk)
+        questions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AlternateQuestionListView(APIView):
+
+    def get(self, request):
+        alt_questions = AlternateQuestion.objects.all()
+        serializer = AlternateQuestionSerializer(alt_questions, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+
+        serializer = AlternateQuestionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AlternateQuestionDetailView(APIView):
+
+    def get(self, request, pk):
+        alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
+        serializer = AlternateQuestionSerializer(alt_questions)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+
+        alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
+
+        serializer = AlternateQuestionSerializer(
+            alt_questions, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+
+        alt_questions = get_object_or_404(AlternateQuestion, pk=pk)
+        alt_questions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ChatbotView(APIView):
     def post(self, request):
-        chat_prompt = request.data.get('problem')
+        chat_prompt = request.data.get('question')
+
+        if chat_prompt is None:
+            return Response({'error': 'Question is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
         generation_config = {
@@ -344,5 +578,89 @@ class ChatbotView(APIView):
         if response.parts:
             return Response({'solution': response.parts[0].text}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': 'No response generated or the prompt was blocked.'},
+            return Response({'error': 'No response generated or the prompt was blocked.'}, 
                             status=status.HTTP_400_BAD_REQUEST)
+        
+class ProblemGeneratorView(APIView):
+    def post(self, request):
+        chat_prompt = request.data.get('question')
+        genai.configure(api_key="AIzaSyBIKvpvW6-RDwXMorDKCs-EJv8bBgmYxPo")
+        generation_config = {
+            "temperature": 0.9,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 2048,
+        }
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_LOW_AND_ABOVE"
+            },
+        ]
+        model = genai.GenerativeModel(model_name="gemini-1.0-pro",
+                                      generation_config=generation_config,
+                                      safety_settings=safety_settings)
+        directions = "For the given Algebra 1 problem, provide one similar but different problem with the same type, format, and difficulty. give the problem and the answer. they should be clearly labled Problem: put_problem_here Answer: put_answer_here. If the current problem is not related to math, respond with the word 'No' and nothing else - I need this for error handling. Current Problem: "
+        full_prompt = directions + chat_prompt
+        prompt_parts = [{"text": full_prompt}]
+        response = model.generate_content(prompt_parts)
+        
+        if response.parts:
+            response_text = response.parts[0].text
+            if response_text == "No":
+                return Response({'error': 'The provided problem is not related to Algebra 1.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                problem_start = response_text.find("Problem: ") + len("Problem: ")
+                answer_start = response_text.find("Answer: ") + len("Answer: ")
+                if problem_start > len("Problem: ") - 1 and answer_start > len("Answer: ") - 1:
+                    problem_end = response_text.find("Answer: ") - 1
+                    answer_end = len(response_text)
+                    problem = response_text[problem_start:problem_end].strip()
+                    answer = response_text[answer_start:answer_end].strip()
+                    return Response({'question': problem, 'answer': answer}, status=status.HTTP_200_OK)
+                else:
+                    raise ValueError('Parsing error')
+            except ValueError:
+                return Response({'error': 'Error parsing the response.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'No response generated or the prompt was blocked.'}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+# Engagement Data Views
+class EngagementDataAPIView(APIView):
+    def get(self, request):
+        try:
+            all_data = EngagementData.objects.all()
+            serializer = EngagementDataSerializer(all_data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except EngagementData.DoesNotExist:
+            return Response({'error': 'No engagement data'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def post(self, request):
+        serializer = EngagementDataSerializer(data=request.data)
+        if serializer.is_valid():
+            engagement_data = serializer.save()
+            
+            # Assuming engagement_periods data is present in request.data
+            period_data = request.data.get('engagement_periods', [])
+            period_serializer = EngagementPeriodSerializer(data=period_data, many=True, context={'engagement_data': engagement_data})
+            
+            if period_serializer.is_valid():
+                period_serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
