@@ -5,26 +5,70 @@ from .models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('auth_id', 'email', 'email_verified',
+        fields = ('id', 'auth_id', 'email', 'email_verified',
                   'auth0_name', 'display_name', 'picture', 'role')
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    students = serializers.SerializerMethodField('get_students')
-    instructor = serializers.SerializerMethodField('get_instructor')
-
-    def get_students(self, obj):
-        return [students.auth_id for students in obj.users.all() if students.role == 'Student']
-
-    def get_instructor(self, obj):
-        return [instructor.display_name for instructor in obj.users.all() if instructor.role == 'Instructor']
-
+    instructor_id = serializers.IntegerField(write_only=True)
+    instructor = UserSerializer(read_only=True)
 
     class Meta:
         model = Course
-        fields = ('id', 'status', 'name', 'instructor',
-                  'students', 'description', 'course_image')
+        fields = ('id', 'status', 'name', 'instructor_id', 'instructor', 'description', 'course_image')
         
+    def create(self, validated_data):
+        instructor_id = validated_data.pop('instructor_id')
+        
+        try:
+    
+            instructor = User.objects.get(id=instructor_id)
+            
+            if instructor.role != "instructor":
+                raise serializers.ValidationError("Assigned user is not an instructor.")
+            
+            
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid instructor id")
+        
+        course = Course.objects.create(instructor=instructor, **validated_data)
+        return course
+        
+class EnrollmentSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True)
+    course_id = serializers.IntegerField(write_only=True)
+    user = UserSerializer(read_only=True)
+    course = CourseSerializer(read_only=True)
+    
+    class Meta:
+        model = Enrollment
+        fields = ('id', 'user_id', 'user', 'course_id', 'course', 'grade')
+        
+    def create(self, validated_data):
+        user_id = validated_data.pop('user_id')
+        course_id = validated_data.pop('course_id')
+        
+        # Check if the user with user_id exists
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User with id {} does not exist".format(user_id))
+
+        # Check if the course with course_id exists
+        try:
+            course = Course.objects.get(pk=course_id)
+        except Course.DoesNotExist:
+            raise serializers.ValidationError("Course with id {} does not exist".format(course_id))
+
+        enrollment = Enrollment.objects.create(user=user, course=course, **validated_data)
+        return enrollment
+
+
+
+
+
+
+
 class CourseGradeSerializer(serializers.ModelSerializer):
     auth_id = serializers.SerializerMethodField('get_auth_id')
 
@@ -34,6 +78,9 @@ class CourseGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseGrade
         fields = ('auth_id', 'course_id', 'grade')
+        
+        
+        
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

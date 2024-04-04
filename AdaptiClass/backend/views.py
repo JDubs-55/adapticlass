@@ -16,9 +16,7 @@ import statistics
 
 
 class UserListView(APIView):
-    # Really for Debugging, not really needed for the app at this point.
-    # Will need something like this in the future, but will need to filter on role="student"
-    # But its probably easier to just get that from the course.
+    
     def get(self, request):
         users = User.objects.filter()
         serializer = UserSerializer(users, many=True)
@@ -104,10 +102,10 @@ class CourseListView(APIView):
             return Response(serializer.data)
 
     def post(self, request):
+        print(request.data)
         serializer = CourseSerializer(data=request.data)
         if serializer.is_valid():
-            name = request.data.get('name')
-            serializer.save(name=name)
+            serializer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -131,20 +129,16 @@ class CourseDetailView(APIView):
                 new_status = request.data.get('status')
                 course.status = new_status
 
-            if 'users' in request.data or 'user' in request.data:
-                if 'user' in request.data:
-                    user_id = request.data['user']
-                else:    
-                    user_id = request.data['users']
+            if 'instructor' in request.data:
+                user_id = request.data.get('instructor')
+                
                 try:
                     user = User.objects.get(auth_id=user_id)
                 except User.DoesNotExist:
                     return Response({"error": f"User '{user_id}' not found"}, status=status.HTTP_404_NOT_FOUND)
-                if user.role == 'Instructor' or user.role == 'Student':
-                    course.users.add(user)
-                else:
-                    return Response({"error": f"User '{user_id}' does not have a role"}, status=status.HTTP_400_BAD_REQUEST)
-
+                
+                course.instructor = user
+            
             if 'description' in request.data:
                 new_description = request.data.get('description')
                 course.description = new_description
@@ -163,7 +157,42 @@ class CourseDetailView(APIView):
         course = get_object_or_404(Course, pk=pk)
         course.delete()
         return Response({"message": f"Course '{course.name}' deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class CourseEnrollmentListView(APIView):
     
+    def get(self, request, user_id):
+        
+        enrollments = Enrollment.objects.filter(user__id=user_id)
+        
+        course_data = []
+        
+        for enrollment in enrollments:
+            course = enrollment.course
+            grade = enrollment.grade
+            
+            serialized_course = CourseSerializer(course).data
+            serialized_course["grade"] = grade
+            course_data.append(serialized_course)
+            
+        return Response(course_data, status=status.HTTP_200_OK)
+
+class CreateEnrollment(APIView):
+    
+    def post(self, request):
+        # Deserialize the request data
+        serializer = EnrollmentSerializer(data=request.data)
+    
+        # Check if the data is valid
+        if serializer.is_valid():
+            # Save the enrollment
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    
+
 class CourseGradeView(APIView):
     def calculate_and_update_grade(self, user, course):
         assignments = Assignment.objects.filter(course_id=course.id)

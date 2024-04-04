@@ -21,13 +21,22 @@ class Course(models.Model):
     status_choices = [('Current', 'Current'), ('Completed', 'Completed')]
     status = models.CharField(max_length=15, choices=status_choices, default='Current')
     name = models.CharField(max_length=50, null=False)
-    users = models.ManyToManyField(User, blank=True)
     description = models.TextField(blank=True)
+    instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="course", default=1)
     course_image = models.URLField(max_length=300, blank=True)
 
     def __str__(self):
         return str(self.id) + ' : ' + self.name
+
+class Enrollment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    grade = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     
+    def __str__(self):
+        return self.auth_id.auth_id + " : [" + str(self.course_id) + " : " + str(self.grade) + "]"
+
+
 class CourseGrade(models.Model):
     auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
