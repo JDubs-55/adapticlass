@@ -433,6 +433,31 @@ class AssignmentQuestionDetailView(APIView):
     def put(self, request, assignment_id, question_id):
         assignments_questions = get_object_or_404(AssignmentQuestion, assignment_id=assignment_id, question_id=question_id)
 
+        # Extract the submitted answer from the request
+        submitted_answer = request.data.get('student_answer', '').strip()
+        
+        # Fetch the correct answer from the Question model
+        correct_answer = assignments_questions.question_id.answer.strip()
+        
+        # Initialize answered_correctly as False
+        answered_correctly = False
+        
+        # Check if the submitted answer matches the correct answer
+        if submitted_answer.lower() == correct_answer.lower():
+            answered_correctly = True
+        else:
+            # Check against alternate answers if the initial check fails
+            alt_answers = assignments_questions.alt_question.all()
+            for alt_q in alt_answers:
+                if submitted_answer.lower() == alt_q.answer.strip().lower():
+                    answered_correctly = True
+                    break
+        
+        # Update the AssignmentQuestion instance
+        assignments_questions.student_answer = submitted_answer
+        assignments_questions.answered_correctly = answered_correctly
+        assignments_questions.save()
+
         serializer = AssignmentQuestionSerializer(
             assignments_questions, data=request.data)
         if serializer.is_valid():
