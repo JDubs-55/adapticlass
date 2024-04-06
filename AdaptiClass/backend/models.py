@@ -75,6 +75,7 @@ class Question(models.Model):
 
 class AlternateQuestion(models.Model):
     auth_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    
     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     question = models.TextField()
     answer = models.TextField()

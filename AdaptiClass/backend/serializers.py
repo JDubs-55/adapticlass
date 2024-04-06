@@ -83,7 +83,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class AlternateQuestionSerializer(serializers.ModelSerializer):
-    auth_id = serializers.SerializerMethodField('get_auth_id')
+   # auth_id = serializers.SerializerMethodField('get_auth_id')
 
     def get_auth_id(self, obj):
         return obj.auth_id.auth_id
