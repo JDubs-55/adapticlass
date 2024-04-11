@@ -77,7 +77,7 @@ class Activity(models.Model):
     type = models.CharField(max_length=10, choices=ActivityType.choices, default=ActivityType.EXERCISE)
     
     def __str__(self):
-        return self.assignment.title + " : " + self.type + " : " + self.is_complete
+        return self.assignment.title + " : " + self.type
 
 class UserActivity(models.Model):
     
@@ -87,7 +87,7 @@ class UserActivity(models.Model):
     grade = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     
     def __str__(self):
-        return self.activity.title + " : " + self.grade
+        return self.activity.title + " : " + str(self.grade)
     
 
 class Question(models.Model):
@@ -100,7 +100,7 @@ class UserQuestion(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     is_answered = models.BooleanField(default=False)
     is_correct = models.BooleanField(default=False)
-    user_answer = models.TextField()
+    user_answer = models.TextField(default="")
     
 
 class Chat(models.Model):
