@@ -74,7 +74,7 @@ const CourseCard = ({data}) => {
     <CourseCardWrapper>
       <CourseInformationContainer>
         <CourseImageContainer>
-            <img src={data.course_image} alt="Profile" />
+            <img src={data.picture} alt="Profile" />
         </CourseImageContainer>
         <CourseInformationLabelContainer>
           <CourseName>{data.name}</CourseName>
