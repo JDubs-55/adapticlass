@@ -30,7 +30,7 @@ def create_user_questions(sender, instance, created, **kwargs):
         users = instance.activity.assignment.course.enrollment_set.all()
         # Create a UserQuestion object for each user
         for user_enrollment in users:
-            user_question = UserQuestion.objects.create(user=user_enrollment, question=instance)
+            user_question = UserQuestion.objects.create(user=user_enrollment.user, question=instance)
 
 
 
