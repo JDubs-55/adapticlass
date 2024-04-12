@@ -56,68 +56,66 @@ const InfoPaneContainer = styled.div`
       : "0"}; /* Adjust width based on info pane visibility */
   min-width: ${(props) =>
     props.$showInfoPane
-        ? "500px"
-        : "0"}; /* Adjust width based on info pane visibility */
+      ? "500px"
+      : "0"}; /* Adjust width based on info pane visibility */
   display: ${(props) =>
     props.$showInfoPane
       ? "block"
       : "none"}; /* Show/hide based on info pane visibility */
   border-left: 2px solid #ededed;
-
 `;
 
 const AssignmentPage = () => {
-  let {course_id} = useParams();
+  let { course_id } = useParams();
   const [inProgressAssignmentData, setInProgressAssignmentData] = useState([]);
   const [upcomingAssignmentData, setUpcomingAssignmentData] = useState([]);
   const [completedAssignmentData, setCompletedAssignmentData] = useState([]);
-  const [courseData, setCourseData] = useState(null)
+  const [courseData, setCourseData] = useState(null);
   const [showInfoPane, setShowInfoPane] = useState(false);
   const [infoPaneData, setInfoPaneData] = useState({});
 
   //Retrieve data from server
   useEffect(() => {
     const fetchAssignmentData = async () => {
-      console.log(course_id);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/student/assignments/${course_id}?user_id=${sessionStorage.getItem('user_id')}`);
-        
-        for(let assignment in response.data){
-          if(assignment['status'] === "In Progress"){
-            //Append to inprogress list. 
+        const response = await axios.get(
+          `http://127.0.0.1:8000/student/assignments/${course_id}/`,
+          { params: { user_id: sessionStorage.getItem("user_id") } }
+        );
+
+        response.data.forEach((assignment) => {
+          if (assignment["status"] === "In Progress") {
+            //Append to inprogress list.
             setInProgressAssignmentData([
               ...inProgressAssignmentData,
-              assignment
+              assignment,
             ]);
-          } else if (assignment['status'] === "Upcoming") {
-            //Append to upcoming list. 
-            setUpcomingAssignmentData([
-              ...upcomingAssignmentData,
-              assignment
-            ]);
-
-          } else if (assignment['status'] === "Completed") {
-            //Append to completed list. 
+          } else if (assignment["status"] === "Upcoming") {
+            //Append to upcoming list.
+            setUpcomingAssignmentData([...upcomingAssignmentData, assignment]);
+          } else if (assignment["status"] === "Completed") {
+            //Append to completed list.
             setCompletedAssignmentData([
               ...completedAssignmentData,
-              assignment
+              assignment,
             ]);
           } else {
-            console.log("Got unexpected assignment status");
+            console.log(
+              `Got unexpected assignment status: ${assignment["status"]}`
+            );
           }
-        }
-
-        console.log(response.data)
+        });
       } catch (error) {
         console.log(error);
       }
     };
 
-    const fetchCourseData = async() => {
+    const fetchCourseData = async () => {
       try {
-        const response= await axios.get(`http://127.0.0.1:8000/courses/${course_id}/`);
-        setCourseData(response.data)
-        console.log(response.data)
+        const response = await axios.get(
+          `http://127.0.0.1:8000/courses/${course_id}/`
+        );
+        setCourseData(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -167,8 +165,12 @@ const AssignmentPage = () => {
         <AssignmentInfoPane
           toggleOffInfoPane={toggleOffInfoPane}
           data={infoPaneData}
-          instructorName={courseData ? courseData["instructor"]['display_name'] || "" : ""}
-          instructorImage={courseData ? courseData["instructor"]['picture'] || "" : ""}
+          instructorName={
+            courseData ? courseData["instructor"]["display_name"] || "" : ""
+          }
+          instructorImage={
+            courseData ? courseData["instructor"]["picture"] || "" : ""
+          }
         />
       </InfoPaneContainer>
     </Container>

@@ -266,7 +266,7 @@ const AssignmentInfoPane = ({
     let complete = 0;
     let total = elements.length;
     for (let element of elements) {
-      if (element["status"] === "complete") {
+      if (element["is_complete"]) {
         complete += 1;
       }
     }
@@ -331,23 +331,23 @@ const AssignmentInfoPane = ({
       </AssignmentDescriptionWrapper>
       <ClassCompletionWrapper>
         <ClassCompletionLabel>{`Class Completion (${
-          data["course_elements"]
-            ? completionBarPercent(data["course_elements"]) || "0%"
+          data["activities"]
+            ? completionBarPercent(data["activities"]) || "0%"
             : "0%"
         })`}</ClassCompletionLabel>
         <CompletionBarWrapper>
           <CompletionBar
             width={
-              data["course_elements"]
-                ? completionBarPercent(data["course_elements"]) || "0%"
+              data["activities"]
+                ? completionBarPercent(data["activities"]) || "0%"
                 : "0%"
             }
           />
         </CompletionBarWrapper>
-        {data["course_elements"] &&
-          data["course_elements"].map((element) => (
+        {data["activities"] &&
+          data["activities"].map((element) => (
             <CompletionElement key={element["id"]}>
-              {element["status"] === "complete" ? (
+              {element["is_complete"] ? (
                 <CheckboxClosedIcon />
               ) : (
                 <CheckboxUncheckedIcon />
