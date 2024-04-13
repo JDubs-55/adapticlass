@@ -6,11 +6,10 @@ const Wrapper = styled.div`
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  width: calc(100%-80px);
+  padding: 20px;
   margin: 20px;
-  width: 100%;
-  max-width: 800px; // Original size
-  padding: 20px; // Padding moved from Content to Wrapper
-  position: relative; 
+  position: relative;
 `;
 
 const ProblemNumber = styled.h2`
@@ -80,16 +79,16 @@ const StatusIndicator = styled.div`
   position: absolute;
   right: 20px;
   top: 20px;
-  ${props => props.isCorrect === null && css`
+  ${props => props.$isCorrect === null && css`
     background-color: #ccc;
   `}
-  ${props => props.isCorrect === true && css`
+  ${props => props.$isCorrect === true && css`
     background-color: green;
     &:after {
       content: '✔';
     }
   `}
-  ${props => props.isCorrect === false && css`
+  ${props => props.$isCorrect === false && css`
     background-color: red;
     &:after {
       content: '✖';
@@ -176,7 +175,7 @@ const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => 
           </ButtonWrapper>
         </form>
       </FormWrapper>
-      <StatusIndicator isCorrect={isCorrect} />
+      <StatusIndicator $isCorrect={isCorrect} />
     </Wrapper>
   );
 };
