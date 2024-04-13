@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
-import Questions from '../components/Questions';
-import ProgressBar from '../components/ProgressBar';
-import ChatBox from '../components/Chatbox';
-import assignments from '../mockRequests/assignments.json'; 
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { BackArrowIcon, DownArrowIcon } from '../assets/Icons';
-
+import React, { useState, useEffect, useRef } from "react";
+import styled from "styled-components";
+import Questions from "../components/Questions";
+import ProgressBar from "../components/ProgressBar";
+import ChatBox from "../components/Chatbox";
+import assignments from "../mockRequests/assignments.json";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { BackArrowIcon, DownArrowIcon } from "../assets/Icons";
 
 const Container = styled.div`
   width: 100%;
@@ -29,7 +28,7 @@ const MainLayout = styled.div`
   display: flex;
   align-items: flex-start;
   height: calc(100vh - 140px);
-  overflow-y:hidden;
+  overflow-y: hidden;
   background-color: #f8f8f8;
 `;
 
@@ -48,8 +47,14 @@ const PageHeaderContainer = styled.div`
   background-color: #fff;
 
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-start;
+`;
+
+const AssignmentInfoHeaderContainer = styled.div`
+  display: flex;
+  align-items: center;
+  jusitfy-content: flex-start;
 `;
 
 const BackIconContainer = styled.div`
@@ -87,8 +92,7 @@ const ActivityDropdown = styled.div`
   margin-left: 10px;
   gap: 5px;
 
-  
-  color: #8A9099;
+  color: #8a9099;
   font-size: 18px;
   font-weight: 500;
 `;
@@ -104,7 +108,6 @@ const DropdownContent = styled.div`
   border-radius: 14px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: max-content;
-  
 `;
 
 const ButtonsWrapper = styled.div`
@@ -124,7 +127,7 @@ const ActivityButton = styled.button`
   border-radius: 14px;
   background-color: #fff;
 
-  color: #8A9099;
+  color: #8a9099;
   font-size: 18px;
   font-weight: 500;
 
@@ -138,17 +141,79 @@ const ActivityButton = styled.button`
   }
 `;
 
+const ButtonControlsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+`;
 
+const SubmitButton = styled.button`
+  margin: 10px 0;
+  padding: 10px 20px;
+  border: none;
+  background-color: #304ffd;
+  border-radius: 14px;
+  margin-right: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: 500;
+  font-size: 16px;
+  font-family: 'Poppins';
+  text-align: center;
+  color: #fff;
+
+  &.next {
+    border: solid 2px #E8E9EB;
+    color: #8A9099;
+    background-color: #fff;
+
+    &:hover {
+      background-color: #E8E9EB;
+    }
+  }
+
+  &.finish {
+    border: solid 2px #49C96D;
+    color: #fff;
+    background-color: #49C96D;
+
+    &:hover {
+      border: solid 2px #20A144;
+      background-color: #20A144;
+    }
+  }
+  
+
+`;
+
+const WebGazerButton = styled.button`
+  margin: 10px 0;
+  padding: 10px 20px;
+  border: solid 2px #304ffd;
+  background-color: ${(props)=>(props.$webgazerActive ? "#304ffd" : "#fff")};
+  border-radius: 14px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: 500;
+  font-size: 16px;
+  font-family: 'Poppins';
+  text-align: center;
+  color: ${(props)=>(props.$webgazerActive ? "#fff" : "#304ffd")};
+`;
 
 const AssignmentsDetail = () => {
   const navigate = useNavigate();
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const activityDropdownRef = useRef(null);
 
-
-  let {course_id, assignment_id} = useParams();
-  const [assignmentData, setAssignmentData] = useState({})
-  const [currentActivity, setCurrentActivity] = useState(null)
+  let { course_id, assignment_id } = useParams();
+  const [assignmentData, setAssignmentData] = useState({});
+  const [currentActivity, setCurrentActivity] = useState(null);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const totalQuestions = assignments.length;
@@ -156,17 +221,19 @@ const AssignmentsDetail = () => {
 
   //Activity Dropdown Functions
   const toggleActivityDropdown = () => {
-    if (assignmentData['activities'].length > 1){
+    if (assignmentData["activities"].length > 1) {
       setShowActivityDropdown(!showActivityDropdown);
     }
-  }
+  };
 
   const toggleCurrentActivity = (activity) => {
     setCurrentActivity(activity);
-  }
+  };
 
   const handleClickOutside = (event) => {
-    const dropdownTrigger = document.getElementById("activity-dropdown-trigger");
+    const dropdownTrigger = document.getElementById(
+      "activity-dropdown-trigger"
+    );
     if (
       activityDropdownRef.current &&
       !activityDropdownRef.current.contains(event.target) &&
@@ -185,73 +252,98 @@ const AssignmentsDetail = () => {
         { params: { user_id: sessionStorage.getItem("user_id") } }
       );
       setAssignmentData(response.data);
-      
+
       //Get the first incomplete activity to start
-      response.data['activities'].forEach((activity) => {
-        if (!activity['is_complete']) {
+      response.data["activities"].forEach((activity) => {
+        if (!activity["is_complete"]) {
           setCurrentActivity(activity);
         }
-      })
+      });
 
       if (currentActivity === null) {
-        setCurrentActivity(response.data['activities'][0]);
+        setCurrentActivity(response.data["activities"][0]);
       }
 
       console.log(assignmentData);
-
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
-
   };
 
-
   useEffect(() => {
-
     document.addEventListener("click", handleClickOutside);
 
     fetchAssignmentData();
 
     return () => {
       document.removeEventListener("click", handleClickOutside);
-    }
-  },[])
+    };
+  }, []);
 
   return (
     <Container>
       <ColumnWrapper>
         <PageHeaderContainer>
-          <BackIconContainer onClick={()=>navigate(-1)}><BackArrowIcon/></BackIconContainer>
-          <AssignmentTitle>{assignmentData ? `${assignmentData["course_name"]} - ${assignmentData["title"]}` : ""}</AssignmentTitle>
-          <DropdownContainer>
-            <ActivityDropdown onClick={toggleActivityDropdown} id="activity-dropdown-trigger">
-              {currentActivity ? currentActivity['type'] : ""}
-              <DownArrowIcon/>
-            </ActivityDropdown>
-            <DropdownContent $show={showActivityDropdown} ref={activityDropdownRef}>
-              <ButtonsWrapper>
-                {assignmentData['activities'] && assignmentData['activities'].map(activity => {
-                  if(activity['id'] !== currentActivity['id']){
-                    return <ActivityButton onClick={() => toggleCurrentActivity(activity)}>{activity['type']}</ActivityButton>
-                  } else {
-                    return null;
-                  }
-                })}
-              </ButtonsWrapper>
-            </DropdownContent>
+          <AssignmentInfoHeaderContainer>
+            <BackIconContainer onClick={() => navigate(-1)}>
+              <BackArrowIcon />
+            </BackIconContainer>
+            <AssignmentTitle>
+              {assignmentData
+                ? `${assignmentData["course_name"]} - ${assignmentData["title"]}`
+                : ""}
+            </AssignmentTitle>
+            <DropdownContainer>
+              <ActivityDropdown
+                onClick={toggleActivityDropdown}
+                id="activity-dropdown-trigger"
+              >
+                {currentActivity ? currentActivity["type"] : ""}
+                <DownArrowIcon />
+              </ActivityDropdown>
+              <DropdownContent
+                $show={showActivityDropdown}
+                ref={activityDropdownRef}
+              >
+                <ButtonsWrapper>
+                  {assignmentData["activities"] &&
+                    assignmentData["activities"].map((activity) => {
+                      if (activity["id"] !== currentActivity["id"]) {
+                        return (
+                          <ActivityButton
+                            onClick={() => toggleCurrentActivity(activity)}
+                          >
+                            {activity["type"]}
+                          </ActivityButton>
+                        );
+                      } else {
+                        return null;
+                      }
+                    })}
+                </ButtonsWrapper>
+              </DropdownContent>
             </DropdownContainer>
+          </AssignmentInfoHeaderContainer>
+          <ButtonControlsContainer>
+            <WebGazerButton $webgazerActive={true}>Toggle Webgazer</WebGazerButton>
+            <SubmitButton className="next">Submit</SubmitButton>
+          </ButtonControlsContainer>
         </PageHeaderContainer>
         <MainLayout>
           <QuestionsContainer>
-            <Questions 
-              updateCurrentIndex={setCurrentQuestionIndex} 
+            <Questions
+              updateCurrentIndex={setCurrentQuestionIndex}
               totalQuestions={totalQuestions}
-              setQuizCompleted={setQuizCompleted} 
+              setQuizCompleted={setQuizCompleted}
             />
 
-            <ProgressBar current={currentQuestionIndex + 1} total={totalQuestions} quizCompleted={quizCompleted} />
+            <ProgressBar
+              current={currentQuestionIndex + 1}
+              total={totalQuestions}
+              quizCompleted={quizCompleted}
+            />
           </QuestionsContainer>
-        <ChatBox/>
+          <ChatBox />
         </MainLayout>
       </ColumnWrapper>
     </Container>
