@@ -40,7 +40,7 @@ const PageHeader = styled.div`
 `;
 
 const ListContainer = styled.div`
-  max-height: calc(100vh - 136px);
+  height: calc(100vh - 136px);
   width: 100%;
   display: flex;
   flex-direction: column;
