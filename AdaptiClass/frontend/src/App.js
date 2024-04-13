@@ -36,7 +36,7 @@ function App() {
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
         <Route path={`${PathConstants.COURSES}/:course_id`} element={<AssignmentPage/>} />
-        <Route path={`${PathConstants.COURSES}/:course_id/${PathConstants.ASSIGNMENT}/:id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
+        <Route path={`${PathConstants.COURSES}/:course_id/${PathConstants.ASSIGNMENT}/:assignment_id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.SETTINGS} element={<SettingsContent />} />
         <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
@@ -48,7 +48,7 @@ function App() {
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
         <Route path={`${PathConstants.COURSES}/:course_id`} element={<AssignmentPage/>} />
-        <Route path={`${PathConstants.COURSES}/:course_id/${PathConstants.ASSIGNMENT}/:id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
+        <Route path={`${PathConstants.COURSES}/:course_id/${PathConstants.ASSIGNMENT}/:assignment_id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
         <Route
