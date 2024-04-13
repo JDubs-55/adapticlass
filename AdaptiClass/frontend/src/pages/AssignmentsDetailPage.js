@@ -206,7 +206,7 @@ const WebGazerButton = styled.button`
   color: ${(props)=>(props.$webgazerActive ? "#fff" : "#304ffd")};
 `;
 
-const AssignmentsDetail = () => {
+const AssignmentsDetail = ({webgazerToggle}) => {
   const navigate = useNavigate();
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const activityDropdownRef = useRef(null);
@@ -325,7 +325,7 @@ const AssignmentsDetail = () => {
             </DropdownContainer>
           </AssignmentInfoHeaderContainer>
           <ButtonControlsContainer>
-            <WebGazerButton $webgazerActive={true}>Toggle Webgazer</WebGazerButton>
+            <WebGazerButton $webgazerActive={true} onClick={webgazerToggle}>Toggle Webgazer</WebGazerButton>
             <SubmitButton className="next">Submit</SubmitButton>
           </ButtonControlsContainer>
         </PageHeaderContainer>
