@@ -288,14 +288,17 @@ class UserAssignmentDetailView(APIView):
         if not user_id:
             return Response({"error":'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        #Filter for all assignments with given course id
+        print(assignment_id)
+        #Filter for all assignments with given assignment id
         assignment = get_object_or_404(Assignment, pk=assignment_id)
-        
             
         #Get user data for the assignment
         user_assignment = UserAssignment.objects.filter(assignment=assignment, user=user_id).first()
             
         serialized_assignment = AssignmentSerializer(assignment).data
+        
+        #I actually want to include the course name info too 
+        serialized_assignment['course_name'] = assignment.course.name
             
         # Store user data in serialized assignment
         if user_assignment:
