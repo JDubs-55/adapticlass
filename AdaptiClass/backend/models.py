@@ -115,6 +115,8 @@ class Chat(models.Model):
 
 # Engagement Data Models
 class EngagementData(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     start = models.DateTimeField()
     end = models.DateTimeField()
     total_time = models.FloatField()

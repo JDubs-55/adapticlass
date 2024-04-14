@@ -206,7 +206,7 @@ const WebGazerButton = styled.button`
   color: ${(props)=>(props.$webgazerActive ? "#304ffd" : "#fff")};
 `;
 
-const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
+const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID}) => {
   const navigate = useNavigate();
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const activityDropdownRef = useRef(null);
@@ -228,6 +228,7 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
 
   const toggleCurrentActivity = (activity) => {
     setCurrentActivity(activity);
+    setUserAndActivityID(sessionStorage.get('user_id'), currentActivity['id']);
   };
 
   const handleClickOutside = (event) => {
@@ -274,6 +275,10 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
     document.addEventListener("click", handleClickOutside);
 
     fetchAssignmentData();
+    if (sessionStorage.get('user_id') !== null && currentActivity) {
+      setUserAndActivityID(sessionStorage.get('user_id'), currentActivity['id']);
+    }
+    
 
     return () => {
       document.removeEventListener("click", handleClickOutside);

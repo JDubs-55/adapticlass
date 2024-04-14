@@ -2,12 +2,18 @@ import React, {useEffect, useState} from "react";
 import axios from "axios";
 
 const WebGazerComponent = ({component: Component}) => {
-    const [date, setDate] = useState();
+    const [userID, setUserID] = useState(null);
+    const [activityID, setActivityID] = useState(null);
     const [webgazerActive, setWebgazerActive] = useState(false);
 
     const toggleWebGazer = () => {
         setWebgazerActive(!webgazerActive);
         console.log(webgazerActive);
+    }
+
+    const setUserAndActivityID = (userID, activityID) =>  {
+        setUserID(userID);
+        setActivityID(activityID);
     }
 
     const formatData = (startDatetime, endTime, engagedTime, engagementPeriods) => {
@@ -157,7 +163,7 @@ const WebGazerComponent = ({component: Component}) => {
 
     return(
         <div>
-            <Component webgazerToggle={toggleWebGazer} webgazerActive={webgazerActive}/>
+            <Component webgazerToggle={toggleWebGazer} webgazerActive={webgazerActive} setUserAndActivityID={setUserAndActivityID}/>
         </div>
     )
 }
