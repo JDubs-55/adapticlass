@@ -192,7 +192,7 @@ const WebGazerButton = styled.button`
   margin: 10px 0;
   padding: 10px 20px;
   border: solid 2px #304ffd;
-  background-color: ${(props)=>(props.$webgazerActive ? "#304ffd" : "#fff")};
+  background-color: ${(props)=>(props.$webgazerActive ? "#fff" : "#304ffd")};
   border-radius: 14px;
 
   display: flex;
@@ -203,10 +203,10 @@ const WebGazerButton = styled.button`
   font-size: 16px;
   font-family: 'Poppins';
   text-align: center;
-  color: ${(props)=>(props.$webgazerActive ? "#fff" : "#304ffd")};
+  color: ${(props)=>(props.$webgazerActive ? "#304ffd" : "#fff")};
 `;
 
-const AssignmentsDetail = ({webgazerToggle}) => {
+const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
   const navigate = useNavigate();
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const activityDropdownRef = useRef(null);
@@ -325,7 +325,7 @@ const AssignmentsDetail = ({webgazerToggle}) => {
             </DropdownContainer>
           </AssignmentInfoHeaderContainer>
           <ButtonControlsContainer>
-            <WebGazerButton $webgazerActive={true} onClick={webgazerToggle}>Toggle Webgazer</WebGazerButton>
+            <WebGazerButton $webgazerActive={webgazerActive} onClick={webgazerToggle}>Toggle Webgazer</WebGazerButton>
             <SubmitButton className="next">Submit</SubmitButton>
           </ButtonControlsContainer>
         </PageHeaderContainer>
