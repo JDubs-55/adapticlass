@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import Questions from "../components/Questions";
-import ProgressBar from "../components/ProgressBar";
-import ChatBox from "../components/Chatbox";
-import assignments from "../mockRequests/assignments.json";
+// import Questions from "../components/Questions";
+// import ProgressBar from "../components/ProgressBar";
+// import ChatBox from "../components/Chatbox";
+// import assignments from "../mockRequests/assignments.json";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BackArrowIcon, DownArrowIcon } from "../assets/Icons";
+import AssessmentActivity from "./Assessment";
 
 const Container = styled.div`
   width: 100%;
@@ -21,22 +22,6 @@ const ColumnWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-`;
-
-const MainLayout = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: flex-start;
-  height: calc(100vh - 140px);
-  overflow-y: hidden;
-  background-color: #f8f8f8;
-`;
-
-const QuestionsContainer = styled.div`
-  width: 80%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 `;
 
 const PageHeaderContainer = styled.div`
@@ -215,10 +200,6 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID
   const [assignmentData, setAssignmentData] = useState({});
   const [currentActivity, setCurrentActivity] = useState(null);
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const totalQuestions = assignments.length;
-  const [quizCompleted, setQuizCompleted] = useState(false);
-
   //Activity Dropdown Functions
   const toggleActivityDropdown = () => {
     if (assignmentData["activities"].length > 1) {
@@ -335,22 +316,7 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID
             <SubmitButton className="next">Submit</SubmitButton>
           </ButtonControlsContainer>
         </PageHeaderContainer>
-        <MainLayout>
-          <QuestionsContainer>
-            <Questions
-              updateCurrentIndex={setCurrentQuestionIndex}
-              totalQuestions={totalQuestions}
-              setQuizCompleted={setQuizCompleted}
-            />
-
-            <ProgressBar
-              current={currentQuestionIndex + 1}
-              total={totalQuestions}
-              quizCompleted={quizCompleted}
-            />
-          </QuestionsContainer>
-          <ChatBox />
-        </MainLayout>
+        {currentActivity && <AssessmentActivity activity_id={currentActivity["id"]}/>}
       </ColumnWrapper>
     </Container>
   );

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
-import assignments from '../mockRequests/assignments.json';
 
 const Wrapper = styled.div`
   background-color: #fff;
@@ -111,14 +110,14 @@ const CompletedButton = styled(SubmitButton)`
   }
 `;
 
-const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => {
+const Questions = ({ updateCurrentIndex, setQuizCompleted, questions}) => {
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [currentProblem, setCurrentProblem] = useState(assignments[currentProblemIndex]);
+  const [currentProblem, setCurrentProblem] = useState(questions[currentProblemIndex]);
   const [userAnswer, setUserAnswer] = useState('');
   const [isCorrect, setIsCorrect] = useState(null);
 
   useEffect(() => {
-    setCurrentProblem(assignments[currentProblemIndex]);
+    setCurrentProblem(questions[currentProblemIndex]);
     updateCurrentIndex(currentProblemIndex); 
   }, [currentProblemIndex, updateCurrentIndex]);
 
@@ -128,7 +127,7 @@ const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => 
     setIsCorrect(answerIsCorrect);
   
     if (answerIsCorrect) {
-      if (currentProblemIndex === assignments.length - 1) {
+      if (currentProblemIndex === questions.length - 1) {
         setQuizCompleted(true);
       }
     }
@@ -136,7 +135,7 @@ const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => 
 
   const handleNextProblem = () => {
     const nextIndex = currentProblemIndex + 1;
-    if (nextIndex < assignments.length) {
+    if (nextIndex < questions.length) {
       setCurrentProblemIndex(nextIndex);
       setIsCorrect(null);
       setUserAnswer('');
@@ -152,9 +151,9 @@ const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => 
 
     return (
     <Wrapper>
-      <ProblemNumber>Problem {currentProblem?.id}</ProblemNumber>
+      <ProblemNumber>Problem {currentProblemIndex+1}</ProblemNumber>
       <ProblemContainer>
-        <ProblemText>{currentProblem?.problem}</ProblemText>
+        <ProblemText>{currentProblem?.question}</ProblemText>
       </ProblemContainer>
       <FormWrapper>
         <form onSubmit={handleSubmit}>
@@ -166,10 +165,10 @@ const Questions = ({ updateCurrentIndex, totalQuestions, setQuizCompleted }) => 
               placeholder="Type something"
             />
             <SubmitButton type="submit">Submit</SubmitButton>
-            {isCorrect && currentProblemIndex < assignments.length - 1 && (
+            {isCorrect && currentProblemIndex < questions.length - 1 && (
               <NextButton onClick={handleNextProblem}>Next</NextButton>
             )}
-            {isCorrect && currentProblemIndex === assignments.length - 1 && (
+            {isCorrect && currentProblemIndex === questions.length - 1 && (
               <CompletedButton onClick={() => console.log("Quiz Completed!")}>Completed</CompletedButton>
             )}
           </ButtonWrapper>
