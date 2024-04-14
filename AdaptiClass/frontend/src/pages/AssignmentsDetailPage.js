@@ -228,7 +228,7 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID
 
   const toggleCurrentActivity = (activity) => {
     setCurrentActivity(activity);
-    setUserAndActivityID(sessionStorage.get('user_id'), currentActivity['id']);
+    setUserAndActivityID(sessionStorage.getItem('user_id'), currentActivity['id']);
   };
 
   const handleClickOutside = (event) => {
@@ -275,8 +275,8 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID
     document.addEventListener("click", handleClickOutside);
 
     fetchAssignmentData();
-    if (sessionStorage.get('user_id') !== null && currentActivity) {
-      setUserAndActivityID(sessionStorage.get('user_id'), currentActivity['id']);
+    if (sessionStorage.getItem('user_id') !== null && currentActivity) {
+      setUserAndActivityID(sessionStorage.getItem('user_id'), currentActivity['id']);
     }
     
 
