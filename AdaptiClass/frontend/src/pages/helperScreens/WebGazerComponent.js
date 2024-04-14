@@ -132,8 +132,12 @@ const WebGazerComponent = ({component: Component}) => {
     
             //Add the last block
             blocks.push({ state: blockState, start: blockStartTime, duration: webgazerEndTime-blockStartTime, end: webgazerEndTime })
-    
-            handleDataSubmission(formatData(currentDateTimeWithTimeZone, webgazerEndTime, engagedTime, blocks));
+            
+            //Avoid any empty (0 duration) blocks which may be generated. 
+            if (webgazerEndTime !== 0){
+                handleDataSubmission(formatData(currentDateTimeWithTimeZone, webgazerEndTime, engagedTime, blocks));
+            }
+            
         }
         
         if (!webgazerActive) {
@@ -142,8 +146,10 @@ const WebGazerComponent = ({component: Component}) => {
 
         return () => {
 
+            if (!webgazerActive) {
+                stopWebgazer();
+            }
             
-            stopWebgazer();
             
             
         };
@@ -151,7 +157,7 @@ const WebGazerComponent = ({component: Component}) => {
 
     return(
         <div>
-            <Component webgazerToggle={toggleWebGazer}/>
+            <Component webgazerToggle={toggleWebGazer} webgazerActive={webgazerActive}/>
         </div>
     )
 }
