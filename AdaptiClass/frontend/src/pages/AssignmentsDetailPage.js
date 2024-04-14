@@ -229,6 +229,7 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID
   const toggleCurrentActivity = (activity) => {
     setCurrentActivity(activity);
     setUserAndActivityID(sessionStorage.getItem('user_id'), currentActivity['id']);
+    webgazerToggle();
   };
 
   const handleClickOutside = (event) => {

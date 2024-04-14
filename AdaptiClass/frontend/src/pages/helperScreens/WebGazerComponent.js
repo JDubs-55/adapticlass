@@ -19,6 +19,8 @@ const WebGazerComponent = ({component: Component}) => {
     const formatData = (startDatetime, endTime, engagedTime, engagementPeriods) => {
 
         const dataToSend = {
+            "user": userID, 
+            "activity": activityID,
             "start": startDatetime,
             "end": new Date(startDatetime.getTime() + endTime),
             "total_time": endTime,
