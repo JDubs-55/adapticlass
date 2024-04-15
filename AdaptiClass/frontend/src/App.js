@@ -16,7 +16,7 @@ const CourseContent = React.lazy(() => import("./pages/Courses"));
 const FeedbackContent = React.lazy(() => import("./pages/Feedback"));
 const SettingsContent = React.lazy(() => import("./pages/Settings"));
 const AssignmentPage = React.lazy(() => import("./pages/AssignmentsPage"));
-const AssignmentsDetailPage = React.lazy(() => import("./pages/AssignmentsDetailPage"));
+const AssignmentsDetailPage = React.lazy(() => import("./pages/ActivitiesPage"));
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0();

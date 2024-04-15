@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-// import Questions from "../components/Questions";
-// import ProgressBar from "../components/ProgressBar";
-// import ChatBox from "../components/Chatbox";
-// import assignments from "../mockRequests/assignments.json";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BackArrowIcon, DownArrowIcon } from "../assets/Icons";
+import ActivityHeader from "../components/ActivitiesPageHeader";
 import AssessmentActivity from "./Assessment";
+import LessonActivity from "./Lesson";
+import ExerciseActivity from "./Exercise";
+import { PageLoader } from "./helperScreens/PageLoader";
+import { FailedToLoadPage } from "./helperScreens/FailedToLoad";
+
 
 const Container = styled.div`
   width: 100%;
@@ -191,41 +193,40 @@ const WebGazerButton = styled.button`
   color: ${(props)=>(props.$webgazerActive ? "#304ffd" : "#fff")};
 `;
 
-const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID}) => {
+const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
   const navigate = useNavigate();
-  const [showActivityDropdown, setShowActivityDropdown] = useState(false);
-  const activityDropdownRef = useRef(null);
-
+  
   let { course_id, assignment_id } = useParams();
-  const [assignmentData, setAssignmentData] = useState({});
+  const [assignmentData, setAssignmentData] = useState(null);
   const [currentActivity, setCurrentActivity] = useState(null);
+  const [activityData, setActivityData] = useState(null);
 
-  //Activity Dropdown Functions
-  const toggleActivityDropdown = () => {
-    if (assignmentData["activities"].length > 1) {
-      setShowActivityDropdown(!showActivityDropdown);
-    }
-  };
-
+  const backButtonCallback = () => {
+    return navigate(-1);
+  }
+  
   const toggleCurrentActivity = (activity) => {
-    setCurrentActivity(activity);
-    setUserAndActivityID(sessionStorage.getItem('user_id'), currentActivity['id']);
-    webgazerToggle();
-  };
-
-  const handleClickOutside = (event) => {
-    const dropdownTrigger = document.getElementById(
-      "activity-dropdown-trigger"
-    );
-    if (
-      activityDropdownRef.current &&
-      !activityDropdownRef.current.contains(event.target) &&
-      event.target !== dropdownTrigger &&
-      !dropdownTrigger.contains(event.target)
-    ) {
-      setShowActivityDropdown(false);
+    if (currentActivity){
+      //Change the current activity. 
+      setCurrentActivity(activity);
     }
   };
+
+  const loadActivity = () => {
+    if (currentActivity === null || activityData === null) {
+      return <PageLoader/>;
+    }
+
+    if (currentActivity['type'] === "Lesson") {
+      return <LessonActivity/>;
+    } else if (currentActivity['type']=== "Exercise") {
+      return <ExerciseActivity/>
+    } else if (currentActivity['type']=== "Assessment"){
+      return <AssessmentActivity questions={activityData}/>
+    } else {
+      return <FailedToLoadPage/>
+    }
+  }
 
   //Fetch Assignment Data
   const fetchAssignmentData = async () => {
@@ -235,88 +236,72 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive, setUserAndActivityID
         { params: { user_id: sessionStorage.getItem("user_id") } }
       );
       setAssignmentData(response.data);
-
-      //Get the first incomplete activity to start
-      response.data["activities"].forEach((activity) => {
-        if (!activity["is_complete"]) {
-          setCurrentActivity(activity);
-        }
-      });
-
-      if (currentActivity === null) {
-        setCurrentActivity(response.data["activities"][0]);
-      }
-
-      console.log(assignmentData);
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
+  const fetchActivityData = async () => {
+    if (currentActivity){
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/questions/${currentActivity['id']}/`);
+        setActivityData(response.data);
+      } catch (error) {
+        console.log(error);
+    }
+    }
+  };
 
+  useEffect(() => {
+    
     fetchAssignmentData();
-    if (sessionStorage.getItem('user_id') !== null && currentActivity) {
-      setUserAndActivityID(sessionStorage.getItem('user_id'), currentActivity['id']);
+  
+  }, []);
+
+  useEffect(()=> {
+    console.log(assignmentData);
+    if (assignmentData){
+      //Get the first incomplete activity to start
+      for (let i =0; i<assignmentData["activities"].length; i++){
+        if (!assignmentData['activities'][i]["is_complete"]) {
+          setCurrentActivity(assignmentData['activities'][i]);
+          break;
+        }
+      }
+      
+      if (currentActivity === null) {
+        setCurrentActivity(assignmentData["activities"][0]);
+      }
     }
     
+  },[assignmentData]);
 
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
+  useEffect(()=>{
+    if (currentActivity) {
+      fetchActivityData();
+    }
+    
+  }, [currentActivity]);
+
+  useEffect(()=>{
+    console.log(activityData);
+  }, [activityData]);
 
   return (
     <Container>
       <ColumnWrapper>
-        <PageHeaderContainer>
-          <AssignmentInfoHeaderContainer>
-            <BackIconContainer onClick={() => navigate(-1)}>
-              <BackArrowIcon />
-            </BackIconContainer>
-            <AssignmentTitle>
-              {assignmentData
-                ? `${assignmentData["course_name"]} - ${assignmentData["title"]}`
-                : ""}
-            </AssignmentTitle>
-            <DropdownContainer>
-              <ActivityDropdown
-                onClick={toggleActivityDropdown}
-                id="activity-dropdown-trigger"
-              >
-                {currentActivity ? currentActivity["type"] : ""}
-                <DownArrowIcon />
-              </ActivityDropdown>
-              <DropdownContent
-                $show={showActivityDropdown}
-                ref={activityDropdownRef}
-              >
-                <ButtonsWrapper>
-                  {assignmentData["activities"] &&
-                    assignmentData["activities"].map((activity) => {
-                      if (activity["id"] !== currentActivity["id"]) {
-                        return (
-                          <ActivityButton
-                            onClick={() => toggleCurrentActivity(activity)}
-                          >
-                            {activity["type"]}
-                          </ActivityButton>
-                        );
-                      } else {
-                        return null;
-                      }
-                    })}
-                </ButtonsWrapper>
-              </DropdownContent>
-            </DropdownContainer>
-          </AssignmentInfoHeaderContainer>
-          <ButtonControlsContainer>
-            <WebGazerButton $webgazerActive={webgazerActive} onClick={webgazerToggle}>Toggle Webgazer</WebGazerButton>
-            <SubmitButton className="next">Submit</SubmitButton>
-          </ButtonControlsContainer>
-        </PageHeaderContainer>
-        {currentActivity && <AssessmentActivity activity_id={currentActivity["id"]}/>}
+        {assignmentData && currentActivity &&
+        <ActivityHeader 
+          backButtonCallback={backButtonCallback}
+          course_name={assignmentData['course_name']}
+          title={assignmentData['title']}
+          activities={assignmentData['activities']}
+          currentActivity={currentActivity}
+          toggleCurrentActivity={toggleCurrentActivity}
+          webgazerActive={webgazerActive}
+          webgazerToggle={webgazerToggle}
+        />}
+        {loadActivity()}
       </ColumnWrapper>
     </Container>
   );
