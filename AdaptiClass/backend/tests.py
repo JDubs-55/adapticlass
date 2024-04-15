@@ -1,3 +1,4 @@
+import json, uuid
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -10,6 +11,150 @@ from datetime import datetime
 from django.utils import timezone
 
 # Create your tests here.
+
+## USER TESTS
+from .serializers import UserSerializer
+
+class UserTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def generate_user_data(self):
+        unique_id = str(uuid.uuid4())[:8]  # Generate a unique identifier
+        return {
+            "auth_id": unique_id,  # Generate a unique UUID for auth_id
+            "email": f"test_{unique_id}@example.com",  # Unique email address
+            "email_verified": True,
+            "auth0_name": "Test User",
+            "display_name": "Test Display Name",
+            "picture": "https://example.com/test.jpg",
+            "role": "Student"
+        }
+
+    def test_create_user(self):
+        # Create a user correctly
+        user_data = self.generate_user_data()
+        url = '/users/'
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(auth_id=user_data['auth_id']).count(), 1)
+
+    def test_get_user_list(self):
+        url = '/users/'
+        user_data1 = self.generate_user_data()
+        response = self.client.post(url, user_data1, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(auth_id=user_data1['auth_id']).count(), 1)
+       
+        user_data2 = self.generate_user_data()
+        response = self.client.post(url, user_data2, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(auth_id=user_data2['auth_id']).count(), 1)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_get_user_detail(self):
+        user_data = self.generate_user_data()
+        url = '/users/'
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(auth_id=user_data['auth_id']).count(), 1)
+
+        url = f"/users/{user_data['auth_id']}/"
+        user = User.objects.get(auth_id=user_data['auth_id'])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, UserSerializer(user).data)
+
+    def test_update_user(self):
+        user_data = self.generate_user_data()
+        url = '/users/'
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(auth_id=user_data['auth_id']).count(), 1)
+
+        user = User.objects.get(auth_id=user_data['auth_id'])
+        updated_data = {
+            "auth_id": user.auth_id,
+            "email": f"test_{user.auth_id}@example.com",
+            "email_verified": False,
+            "auth0_name": "Test User",
+            "display_name": "Updated Display Name",
+            "picture": "https://example.com/test.jpg",
+            "role": "Student"
+        }
+        url = f"/users/{user.auth_id}/"
+        response = self.client.put(url, updated_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        user.refresh_from_db()
+        self.assertFalse(user.email_verified)
+        self.assertEqual(user.display_name, 'Updated Display Name')
+
+    def test_delete_user(self):
+        user_data = self.generate_user_data()
+        url = '/users/'
+        response = self.client.post(url, user_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.filter(auth_id=user_data['auth_id']).count(), 1)
+
+        url = f"/users/{user_data['auth_id']}/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_invalid_user_creation(self):
+        # Use the same email address for creating two users
+        user_data1 = self.generate_user_data()
+        user_data2 = self.generate_user_data()
+        user_data2['email'] = user_data1['email']
+
+        url = '/users/'
+        response = self.client.post(url, user_data1, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(url, user_data2, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Use the same auth_id for creating two users
+        user_data3 = self.generate_user_data()
+        user_data4 = self.generate_user_data()
+        user_data4['auth_id'] = user_data3['auth_id']
+
+        url = '/users/'
+        response = self.client.post(url, user_data3, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(url, user_data4, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create a user incorrectly (no auth_id)
+        user_data5 = {
+            "email": f"test_@example.com",  # Unique email address
+            "email_verified": True,
+            "auth0_name": "Test User",
+            "display_name": "Test Display Name",
+            "picture": "https://example.com/test.jpg",
+            "role": "Student"
+        }
+        response = self.client.post(url, user_data5, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create a user incorrectly (no email)
+        user_data5 = {
+            "auth_id": "123456789",
+            "email_verified": True,
+            "auth0_name": "Test User",
+            "display_name": "Test Display Name",
+            "picture": "https://example.com/test.jpg",
+            "role": "Student"
+        }
+        response = self.client.post(url, user_data5, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
 
 # This test suite verifies the integrity of the Chat model and its relationships. 
 # It checks: 1) Creation of Chat with correct attributes and foreign keys to User and Assignment.
