@@ -197,19 +197,19 @@ class EngagementDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EngagementData
-        fields = ['id', 'user', 'activity', 'start', 'end', 'total_time', 'engaged_time', 'engagement_periods']
+        fields = ['id', 'user', 'assignment', 'start', 'end', 'total_time', 'engaged_time', 'engagement_periods']
     
     def validate(self, data):
         user = data.get('user')
-        activity = data.get('activity')
+        assignment = data.get('assignment')
         
         # Check user exists
         if not User.objects.filter(pk=user.pk).exists():
             raise serializers.ValidationError("User does not exist.")
         
         # Check question exists
-        if not Activity.objects.filter(pk=activity.pk).exists():
-            raise serializers.ValidationError("Activity does not exist.")
+        if not Assignment.objects.filter(pk=assignment.pk).exists():
+            raise serializers.ValidationError("Assignment does not exist.")
         
         return data
 

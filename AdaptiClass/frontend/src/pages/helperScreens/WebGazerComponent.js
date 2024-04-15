@@ -1,26 +1,20 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const WebGazerComponent = ({component: Component}) => {
-    const [userID, setUserID] = useState(null);
-    const [activityID, setActivityID] = useState(null);
+    let { assignment_id } = useParams();
     const [webgazerActive, setWebgazerActive] = useState(false);
 
     const toggleWebGazer = () => {
         setWebgazerActive(!webgazerActive);
-        console.log(webgazerActive);
-    }
-
-    const setUserAndActivityID = (userID, activityID) =>  {
-        setUserID(userID);
-        setActivityID(activityID);
     }
 
     const formatData = (startDatetime, endTime, engagedTime, engagementPeriods) => {
 
         const dataToSend = {
-            "user": userID, 
-            "activity": activityID,
+            "user": sessionStorage.getItem('user_id'), 
+            "assignment": assignment_id,
             "start": startDatetime,
             "end": new Date(startDatetime.getTime() + endTime),
             "total_time": endTime,
@@ -165,7 +159,7 @@ const WebGazerComponent = ({component: Component}) => {
 
     return(
         <div>
-            <Component webgazerToggle={toggleWebGazer} webgazerActive={webgazerActive} setUserAndActivityID={setUserAndActivityID}/>
+            <Component webgazerToggle={toggleWebGazer} webgazerActive={webgazerActive}/>
         </div>
     )
 }
