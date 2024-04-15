@@ -21,38 +21,22 @@ const QuestionsContainer = styled.div`
   justify-content: center;
 `;
 
-const AssessmentActivity = ({activity_id}) => {
-
-    const [questionData, setQuestionData] = useState([]);
+const AssessmentActivity = ({questions}) => {
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [quizCompleted, setQuizCompleted] = useState(false);
 
-    const fetchAssessmentContent = async () => {
-        try {
-            const response = await axios.get(`http://127.0.0.1:8000/questions/${activity_id}/`);
-            setQuestionData(response.data);
-            console.log(questionData);
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
-    useEffect(()=> {
-        fetchAssessmentContent();
-    },[]);
-
     return (
         <MainLayout>
           <QuestionsContainer>
-            {questionData.length !== 0 && <Questions
+            {questions.length !== 0 && <Questions
               updateCurrentIndex={setCurrentQuestionIndex}
               setQuizCompleted={setQuizCompleted}
-              questions={questionData}
+              questions={questions}
             /> }
-            {questionData.length !== 0 && <ProgressBar
+            {questions.length !== 0 && <ProgressBar
               current={currentQuestionIndex + 1}
-              total={questionData.length}
+              total={questions.length}
               quizCompleted={quizCompleted}
             />}
           </QuestionsContainer>
