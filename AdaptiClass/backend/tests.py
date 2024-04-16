@@ -405,6 +405,354 @@ class EnrollmentTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+## ASSIGNMENT TEST CASES
+class AssignmentTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Create a course
+        self.course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            status="Current",
+            instructor=User.objects.create(
+                auth_id="123456789",
+                email="instructor@example.com",
+                email_verified=True,
+                auth0_name="Instructor User",
+                display_name="Instructor Display Name",
+                role="Instructor"
+            )
+        )
+
+        # Create a student
+        self.student = User.objects.create(
+            auth_id="987654321",
+            email="student@example.com",
+            email_verified=True,
+            auth0_name="Student User",
+            display_name="Student Display Name",
+            role="Student"
+        )
+
+    def test_create_assignment(self):
+        url = f'/assignments/{self.course.id}/'
+        data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Assignment.objects.count(), 1)
+
+    def test_get_assignment_list(self):
+        # Create an assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data1 = {
+            "course": self.course.id,
+            "title": "Test Assignment 1",
+            "description": "Test Description 1",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data1, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Create another assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data2 = {
+            "course": self.course.id,
+            "title": "Test Assignment 2",
+            "description": "Test Description 2",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data2, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_get_assignment_detail(self):
+        # Create an assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+        assignment = Assignment.objects.get(id = response.data['id'])
+        url = f'/assignment/{assignment.id}/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['course'], self.course.id)
+        self.assertEqual(response.data['title'], "Test Assignment")
+        self.assertEqual(response.data['description'], "Test Description")
+        self.assertEqual(response.data['status'], "Upcoming")
+        self.assertEqual(response.data['due_date'], "2024-04-20")
+        self.assertEqual(response.data['created_by'], self.course.instructor.id)
+
+
+    def test_modify_assignment(self):
+        # Create an assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+         # Modify the assignment
+        assignment = Assignment.objects.get(id = response.data['id'])
+        url = f'/assignment/{assignment.id}/'
+        modified_data = {
+            "course": self.course.id,
+            "title": "Modified Assignment",
+            "description": "Modified Description",
+            "status": "Upcoming",
+            "due_date": "2024-05-01",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.put(url, modified_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+        # Check if the assignment details have been updated
+        modified_assignment = Assignment.objects.get(id=assignment.id)
+        self.assertEqual(modified_assignment.title, "Modified Assignment")
+        self.assertEqual(modified_assignment.description, "Modified Description")
+        self.assertEqual(str(modified_assignment.due_date), "2024-05-01")
+
+    def test_invalid_assignment(self):
+        # Invalid course ID (note the plural 'assignments')
+        url = '/assignments/9999/' 
+        response = self.client.post(url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Invalid assignment ID
+        url = '/assignment/9999/' 
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Create assignment with no course data
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create assignment with improper status
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Wrong Status",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create assignment with no created_by
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20"
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create assignment with no due date
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create an assignment with no title
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_student_assignment_list(self):
+        # Create an assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data1 = {
+            "course": self.course.id,
+            "title": "Test Assignment 1",
+            "description": "Test Description 1",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response1 = self.client.post(url, ass_data1, format='json')
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+
+        # Create another assignment
+        ass_data2 = {
+            "course": self.course.id,
+            "title": "Test Assignment 2",
+            "description": "Test Description 2",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response2 = self.client.post(url, ass_data2, format='json')
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+
+        # Associate the assignments with the student
+        assignment1 = Assignment.objects.get(id = response1.data['id'])
+        assignment2 = Assignment.objects.get(id = response2.data['id'])
+        UserAssignment.objects.create(
+            user=self.student,
+            assignment=assignment1,
+            grade = 95.00,
+            is_complete = True
+        )
+
+        UserAssignment.objects.create(
+            user=self.student,
+            assignment=assignment2,
+            grade = 50.00,
+            is_complete = False
+        )
+
+        url = f'/student/assignments/{self.course.id}/?user_id={self.student.id}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+        # Check assignment 1 data
+        self.assertEqual(response.data[0]['course'], self.course.id)
+        self.assertEqual(response.data[0]['title'], "Test Assignment 1")
+        self.assertEqual(response.data[0]['description'], "Test Description 1")
+        self.assertEqual(response.data[0]['status'], "Upcoming")
+        self.assertEqual(response.data[0]['due_date'], "2024-04-20")
+        self.assertEqual(response.data[0]['created_by'], self.course.instructor.id)
+        self.assertEqual(response.data[0]['grade'], 95.00)
+        self.assertTrue(response.data[0]['is_complete'])
+
+        # Check assignment 2 data
+        self.assertEqual(response.data[1]['course'], self.course.id)
+        self.assertEqual(response.data[1]['title'], "Test Assignment 2")
+        self.assertEqual(response.data[1]['description'], "Test Description 2")
+        self.assertEqual(response.data[1]['status'], "Upcoming")
+        self.assertEqual(response.data[1]['due_date'], "2024-04-20")
+        self.assertEqual(response.data[1]['created_by'], self.course.instructor.id)
+        self.assertEqual(response.data[1]['grade'], 50.00)
+        self.assertFalse(response.data[1]['is_complete'])
+
+    def test_get_student_assignment_detail(self):
+        # Create an assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Associate the assignment with the student
+        assignment = Assignment.objects.get(id = response.data['id'])
+        UserAssignment.objects.create(
+            user=self.student,
+            assignment=assignment,
+            grade = 75.00,
+            is_complete = False
+        )
+
+        url = f'/student/assignment/{assignment.id}/?user_id={self.student.id}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['course'], self.course.id)
+        self.assertEqual(response.data['title'], "Test Assignment")
+        self.assertEqual(response.data['description'], "Test Description")
+        self.assertEqual(response.data['status'], "Upcoming")
+        self.assertEqual(response.data['due_date'], "2024-04-20")
+        self.assertEqual(response.data['created_by'], self.course.instructor.id)
+        self.assertEqual(response.data['grade'], 75.00)
+        self.assertFalse(response.data['is_complete'])
+
+    def test_no_assignments_for_student(self):
+        # Create an assignment without associating it with the student
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Fetch student assignments without associating the assignment with the student
+        url = f'/student/assignments/{self.course.id}/?user_id={self.student.id}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_student_id(self):
+        # Create an assignment
+        url = f'/assignments/{self.course.id}/'
+        ass_data = {
+            "course": self.course.id,
+            "title": "Test Assignment",
+            "description": "Test Description",
+            "status": "Upcoming",
+            "due_date": "2024-04-20",
+            "created_by": self.course.instructor.id
+        }
+        response = self.client.post(url, ass_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        url = f'/student/assignments/{self.course.id}/?user_id=9999'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 # This test suite verifies the integrity of the Chat model and its relationships. 
 # It checks: 1) Creation of Chat with correct attributes and foreign keys to User and Assignment.
