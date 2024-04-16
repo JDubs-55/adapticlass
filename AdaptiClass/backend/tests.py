@@ -754,6 +754,148 @@ class AssignmentTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+## ACTIVITY TEST CASES
+class ActivityTestCase(TestCase):
+    def setUp(self):
+        # Create an instructor user
+        self.instructor = User.objects.create(
+            auth_id="987654321",
+            email="instructor@example.com",
+            email_verified=True,
+            auth0_name="Instructor User",
+            display_name="Instructor Display Name",
+            role="Instructor"
+        )
+
+        # Create a student user
+        self.student = User.objects.create(
+            auth_id="123456789",
+            email="student@example.com",
+            email_verified=True,
+            auth0_name="Student User",
+            display_name="Student Display Name",
+            role="Student"
+        )
+
+        # Create a course
+        self.course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            status="Current",
+            instructor=self.instructor
+        )
+
+        # Create an assignment
+        self.assignment = Assignment.objects.create(
+            course=self.course,
+            title="Test Assignment",
+            description="Test Description",
+            status="Upcoming",
+            due_date="2024-04-20",
+            created_by=self.instructor
+        )
+
+
+    def test_create_activity(self):
+        # Create a new activity
+        url = f'/activities/{self.assignment.id}/'
+        act_data = {
+            'assignment': self.assignment.id,
+            'title': "New Activity",
+            'type': "Assessment"
+        }
+        response = self.client.post(url, act_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Activity.objects.count(), 1)
+
+
+    def test_modify_activity(self):
+        # Create an activity
+        url = f'/activities/{self.assignment.id}/'
+        act_data = {
+            'assignment': self.assignment.id,
+            'title': "New Activity",
+            'type': "Assessment"
+        }
+        response = self.client.post(url, act_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Modify the activity
+        activity = Activity.objects.get(assignment=self.assignment)
+        url = f'/activity/{activity.id}/'
+        data = {
+            "assignment": self.assignment.id,
+            "title": "Updated Activity",
+            "type": "Exercise"
+        }
+        json_data = json.dumps(data)
+        response = self.client.put(url, json_data, content_type='application/json')
+
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        updated_activity = Activity.objects.get(pk=activity.id)
+        self.assertEqual(updated_activity.assignment, self.assignment)
+        self.assertEqual(updated_activity.title, "Updated Activity")
+        self.assertEqual(updated_activity.type, "Exercise")
+
+    def test_delete_activity(self):
+        # Create an activity
+        url = f'/activities/{self.assignment.id}/'
+        act_data = {
+            'assignment': self.assignment.id,
+            'title': "New Activity",
+            'type': "Assessment"
+        }
+        response = self.client.post(url, act_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        activity = Activity.objects.get(assignment=self.assignment)
+        url = f'/activity/{activity.id}/'
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Activity.objects.count(), 0)
+
+    def test_invalid_activity_requests(self):
+        # List activities with an invalid assignment ID (should be empty list)
+        url = f'/activities/999/'
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 0)
+
+        # Get details of activity that doesnt exist
+        url = '/activity/999/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Create acitivty with no assignment
+        url = f'/activities/{self.assignment.id}/'
+        act_data = {
+            'title': "New Activity",
+            'type': "Assessment"
+        }
+        response = self.client.post(url, act_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create activity with no title
+        url = f'/activities/{self.assignment.id}/'
+        act_data = {
+            'assignment': self.assignment.id,
+            'type': "Assessment"
+        }
+        response = self.client.post(url, act_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+        # Create activity with invlaid type
+        url = f'/activities/{self.assignment.id}/'
+        act_data = {
+            'assignment': self.assignment.id,
+            'title': "New Activity",
+            'type': "Wrong Type"
+        }
+        response = self.client.post(url, act_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
 # This test suite verifies the integrity of the Chat model and its relationships. 
 # It checks: 1) Creation of Chat with correct attributes and foreign keys to User and Assignment.
 # 2) User's association with Course. 3) Assignment's link to Course. 
