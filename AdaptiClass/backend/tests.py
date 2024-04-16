@@ -259,13 +259,18 @@ class CourseTestCase(TestCase):
         self.assertEqual(course.status, updated_data['status'])
 
     def test_delete_course(self):
-        course = Course.objects.create(
-            name="Test Course",
-            description="Test Description",
-            status="Current",
-            instructor=self.instructor
-        )
+        url = '/courses/'
+        course_data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, course_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        course = Course.objects.get(name=course_data["name"])
         url = f'/courses/{course.id}/'
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
