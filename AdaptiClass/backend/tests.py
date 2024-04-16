@@ -895,6 +895,253 @@ class ActivityTestCase(TestCase):
         response = self.client.post(url, act_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+## QUESTION TEST CASES
+class QuestionTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Create a student user
+        self.student = User.objects.create(
+            auth_id="123456789",
+            email="test@example.com",
+            email_verified=True,
+            auth0_name="Test User",
+            display_name="Test Display Name",
+            role="Student"
+        )
+
+        # Create a user to use as an instructor
+        self.instructor = User.objects.create(
+            auth_id="987654321",
+            email="instructor@example.com",
+            email_verified=True,
+            auth0_name="Instructor User",
+            display_name="Instructor Display Name",
+            role="Instructor"
+        )
+
+        # Create a course
+        self.course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            status="Current",
+            instructor=self.instructor,
+            course_image="https://example.com/course.jpg"
+        )
+
+        # Create an assignment
+        self.assignment = Assignment.objects.create(
+            course=self.course,
+            title="Test Assignment",
+            description="Test Description",
+            status="Upcoming",
+            due_date="2024-04-20",
+            created_by=self.instructor
+        )
+
+        # Create an activity
+        self.activity = Activity.objects.create(
+            assignment=self.assignment,
+            title="Test Activity",
+            type="Exercise" 
+            )
+
+    def test_create_question(self):
+        url = f'/questions/{self.activity.id}/'
+        question_data = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+            'answer': str(2 + 2)
+        }
+        response = self.client.post(url, question_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Question.objects.count(), 1)
+
+
+    def test_get_question_list(self):
+        url = f'/questions/{self.activity.id}/'
+        question_data1 = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+            'answer': str(2+2)
+        }
+        response = self.client.post(url, question_data1, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        question_data2 = {
+            'activity': self.activity.id,
+            'question': 'What is 57 * 32?',
+            'answer': str(57 * 32)
+        }
+        response = self.client.post(url, question_data2, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(Question.objects.count(), 2)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["question"], 'What is 2 + 2?')
+        self.assertEqual(response.data[0]["answer"], str(2+2))
+        self.assertEqual(response.data[1]["question"], 'What is 57 * 32?')
+        self.assertEqual(response.data[1]["answer"], str(57 * 32))
+
+
+    def test_get_question_detail(self):
+        url = f'/questions/{self.activity.id}/'
+        question_data = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+            'answer': str(2+2)
+        }
+        response = self.client.post(url, question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        question = Question.objects.get(activity=self.activity)
+        url = f'/question/{question.id}/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["activity"], self.activity.id)
+        self.assertEqual(response.data["question"], 'What is 2 + 2?')
+        self.assertEqual(response.data["answer"], str(2+2))
+
+    def test_update_question(self):
+        url = f'/questions/{self.activity.id}/'
+        question_data = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+            'answer': str(2+2)
+        }
+        response = self.client.post(url, question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        updated_data = {
+            'activity': self.activity.id,
+            'question': 'What is 3 + 3?',
+            'answer': str(3 + 3)
+        }
+        
+        question = Question.objects.get(activity=self.activity)
+        url = f'/question/{question.id}/'
+        response = self.client.put(url, updated_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.data["question"], 'What is 3 + 3?')
+        self.assertEqual(response.data["answer"], str(3 + 3))
+
+    def test_delete_question(self):
+        url = f'/questions/{self.activity.id}/'
+        question_data = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+            'answer': str(2+2)
+        }
+        response = self.client.post(url, question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        question = Question.objects.get(activity=self.activity)
+        url = f'/question/{question.id}/'
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Question.objects.count(), 0)
+
+    def test_invalid_question_requests(self):
+        # Create a question without an activity
+        url = f'/questions/{self.activity.id}/'
+        invalid_question_data = {
+            'question': 'What is 2 + 2?',
+            'answer': str(2 + 2)
+        }
+        response = self.client.post(url, invalid_question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create a question without a question
+        url = f'/questions/{self.activity.id}/'
+        invalid_question_data = {
+            'activity': self.activity.id,
+            'answer': str(2 + 2)
+        }
+        response = self.client.post(url, invalid_question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create a question without an answer
+        url = f'/questions/{self.activity.id}/'
+        invalid_question_data = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+        }
+        response = self.client.post(url, invalid_question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Getting a question that does not exist
+        url = f'/question/9999/'
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Updating a question that does not exist
+        url = f'/question/9999/'
+        updated_data = {
+            'activity': self.activity.id,
+            'question': 'What is 3 + 3?',
+            'answer': str(3 + 3)
+        }
+        response = self.client.put(url, updated_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Deleting a question that does not exist
+        url = f'/question/9999/'
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_associate_question_with_user(self):
+        url = f'/questions/{self.activity.id}/'
+        question_data = {
+            'activity': self.activity.id,
+            'question': 'What is 2 + 2?',
+            'answer': str(2 + 2)
+        }
+        response = self.client.post(url, question_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Ensure UserQuestion is associated with the correct user and question
+        question = Question.objects.get(activity=self.activity)
+        user_question = UserQuestion.objects.create(
+            user=self.student,
+            question=question,
+            is_answered=False,
+            is_correct=False,
+            user_answer=''
+        )
+        # Retrieve the associated question and check its attributes
+        self.assertEqual(user_question.user, self.student)
+        self.assertEqual(user_question.question.activity.id, question_data['activity'])
+        self.assertEqual(user_question.question.question, question_data['question'])
+        self.assertEqual(user_question.question.answer, question_data['answer'])
+
+        # Update the user question with an incorrect user answer
+        user_answer = str(5 + 2)
+        user_question.user_answer = user_answer
+        is_correct = (user_answer == question_data['answer'])
+        is_answered = (user_answer != '')
+        user_question.is_answered = is_answered
+        user_question.is_correct = is_correct
+        user_question.save()
+
+        self.assertTrue(user_question.is_answered)
+        self.assertFalse(user_question.is_correct)
+
+        # Update the user question with a correct user answer
+        user_answer = str(2 + 2)
+        user_question.user_answer = user_answer
+        is_correct = (user_answer == question_data['answer'])
+        is_answered = (user_answer != '')
+        user_question.is_answered = is_answered
+        user_question.is_correct = is_correct
+        user_question.save()
+
+        self.assertTrue(user_question.is_answered)
+        self.assertTrue(user_question.is_correct)
+
 
 # This test suite verifies the integrity of the Chat model and its relationships. 
 # It checks: 1) Creation of Chat with correct attributes and foreign keys to User and Assignment.
