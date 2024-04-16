@@ -1,4 +1,4 @@
-import json, uuid
+import json, uuid, dateutil.parser
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -10,6 +10,7 @@ from .models import *
 from .serializers import *
 from datetime import datetime
 from django.utils import timezone
+
 
 # Create your tests here.
 
@@ -1141,6 +1142,254 @@ class QuestionTestCase(APITestCase):
 
         self.assertTrue(user_question.is_answered)
         self.assertTrue(user_question.is_correct)
+
+
+## ENGAGEMENT TEST CASES
+class EngagementTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        self.student = User.objects.create(
+            auth_id="123456789",
+            email="test@example.com",
+            email_verified=True,
+            auth0_name="Test User",
+            display_name="Test Display Name",
+            role="Student"
+        )
+
+        # Create a user to use as an instructor
+        self.instructor = User.objects.create(
+            auth_id="987654321",
+            email="instructor@example.com",
+            email_verified=True,
+            auth0_name="Instructor User",
+            display_name="Instructor Display Name",
+            role="Instructor"
+        )
+
+        # Create a course
+        self.course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            status="Current",
+            instructor=self.instructor,
+            course_image="https://example.com/course.jpg"
+        )
+
+        self.assignment = Assignment.objects.create(
+            course=self.course,
+            title="Test Assignment",
+            description="Test Description",
+            status="Upcoming",
+            due_date="2024-04-20",
+            created_by=self.instructor
+        )
+
+        self.url = '/engagementdata/'
+
+    def test_create_engagement_data(self):
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'start': start_time,
+            'end': end_time,
+            'total_time': end_time - start_time,
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+    def test_retrieve_engagement_data(self):
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'start': start_time.isoformat(),
+            'end': end_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.get(self.url)
+
+        # Convert strings to datetime objects for comparison
+        start_time_response = dateutil.parser.parse(response.data[0]["start"])
+        end_time_response = dateutil.parser.parse(response.data[0]["end"])
+        start_time_data = dateutil.parser.parse(data["start"])
+        end_time_data = dateutil.parser.parse(data["end"])
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["user"], self.student.id)
+        self.assertEqual(response.data[0]["assignment"], self.assignment.id)
+        self.assertEqual(start_time_response, start_time_data)
+        self.assertEqual(end_time_response, end_time_data)
+        self.assertEqual(response.data[0]["total_time"], 3600)
+        self.assertEqual(response.data[0]["engaged_time"], 1800)
+
+    def test_create_engagement_period(self):
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'start': start_time.isoformat(),
+            'end': end_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        engagement_data = EngagementData.objects.get(user=self.student.id, start=start_time)
+        
+        # Create engagement period data
+        start_timestamp = timezone.now().timestamp()
+        end_timestamp = (timezone.now() + timezone.timedelta(hours=1)).timestamp()
+        period_data = {
+            'engagement_data': engagement_data,
+            'state': "Active",
+            'start': start_timestamp,
+            'duration': 3600,
+            'end': end_timestamp
+        }
+
+        # Create the engagement period
+        engagement_period = EngagementPeriod.objects.create(**period_data)
+
+        # Assert that the engagement period was created successfully
+        self.assertEqual(engagement_period.state, "Active")
+        self.assertEqual(engagement_period.start, start_timestamp)
+        self.assertEqual(engagement_period.duration, 3600)
+        self.assertEqual(engagement_period.end, end_timestamp)
+
+    def test_retrieve_engagement_period(self):
+        # Create engagement data
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'start': start_time.isoformat(),
+            'end': end_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        engagement_data = EngagementData.objects.get(user=self.student.id, start=start_time)
+
+        # Create engagement period
+        period_start = start_time.timestamp()  # Convert to Unix timestamp
+        period_end = (start_time + timezone.timedelta(hours=1)).timestamp()  # Convert to Unix timestamp
+        engagement_period = EngagementPeriod.objects.create(
+            engagement_data=engagement_data,
+            state="Active",
+            start=period_start,
+            duration=3600,
+            end=period_end
+        )
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+        # Check that engagement data is correct
+        retrieved_engagement_data = response.data[0]
+
+        # Convert strings to datetime objects for comparison
+        start_time_response = dateutil.parser.parse(retrieved_engagement_data["start"])
+        end_time_response = dateutil.parser.parse(retrieved_engagement_data["end"])
+        start_time_data = dateutil.parser.parse(data["start"])
+        end_time_data = dateutil.parser.parse(data["end"])
+
+        self.assertEqual(retrieved_engagement_data['user'], self.student.id)
+        self.assertEqual(retrieved_engagement_data['assignment'], self.assignment.id)
+        self.assertEqual(start_time_response, start_time_data)
+        self.assertEqual(end_time_response, end_time_data)
+        self.assertEqual(retrieved_engagement_data['total_time'], (end_time - start_time).total_seconds())
+        self.assertEqual(retrieved_engagement_data['engaged_time'], 1800)
+
+        # Assert the correctness of retrieved engagement period
+        retrieved_period = response.data[0]['engagement_periods'][0]  # Adjusted to access nested engagement data
+        self.assertEqual(retrieved_period['engagement_data'], engagement_period.engagement_data.id)
+        self.assertEqual(retrieved_period['state'], engagement_period.state)
+        self.assertEqual(retrieved_period['start'], engagement_period.start)
+        self.assertEqual(retrieved_period['duration'], engagement_period.duration)
+        self.assertEqual(retrieved_period['end'], engagement_period.end)
+
+    def test_invalid_input(self):
+        # Try to create engagement data with no user
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'assignment': self.assignment.id,
+            'start': start_time.isoformat(),
+            'end': end_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Try to create engagement data with no assignment
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'start': start_time.isoformat(),
+            'end': end_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Try to create engagement data with no start time
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'end': end_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Try to create engagement data with no end time
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'start': start_time.isoformat(),
+            'total_time': (end_time - start_time).total_seconds(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Try to create engagement data without total time
+        start_time = timezone.now()
+        end_time = start_time + timezone.timedelta(hours=1)
+        data = {
+            'user': self.student.id,
+            'assignment': self.assignment.id,
+            'start': start_time.isoformat(),
+            'end': end_time.isoformat(),
+            'engaged_time': 1800
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 # This test suite verifies the integrity of the Chat model and its relationships. 
