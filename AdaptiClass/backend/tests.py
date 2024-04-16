@@ -320,6 +320,89 @@ class CourseTestCase(TestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+## ENROLLMENT TESTS
+class EnrollmentTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Create a student user
+        self.student = User.objects.create(
+            auth_id="123456789",
+            email="test@example.com",
+            email_verified=True,
+            auth0_name="Test User",
+            display_name="Test Display Name",
+            role="Student"
+        )
+
+        #Create an instructor user for course
+        self.instructor = User.objects.create(
+            auth_id="987654321",
+            email="instructor@example.com",
+            email_verified=True,
+            auth0_name="Instructor User",
+            display_name="Instructor Display Name",
+            role="Instructor"
+        )
+
+        # Create a course
+        self.course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            status="Current",
+            instructor=self.instructor
+        )
+
+    def test_create_enrollment(self):
+        url = '/createenrollment/'
+        data = {
+            "user_id": self.student.id,
+            "course_id": self.course.id,
+            "grade": 70.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Enrollment.objects.count(), 1)
+
+    def test_get_enrollments_for_user(self):
+        # Create an enrollment for the student
+        url = '/createenrollment/'
+        data = {
+            "user_id": self.student.id,
+            "course_id": self.course.id,
+            "grade": 95.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        url = f'/enrollments/{self.student.id}/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], self.course.name)
+        self.assertEqual(response.data[0]['instructor']['id'], self.instructor.id)
+        self.assertEqual(response.data[0]['grade'], 95.00)
+
+    def test_invalid_enrollment(self):
+        url = '/createenrollment/'
+
+        # Create an enrollment with an invalid user ID
+        data = {
+            "user_id": "654",
+            "course_id": self.course.id,
+            "grade": 50.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Create an enrollment with an invalid course ID
+        data = {
+            "user_id": self.student.id,
+            "course_id": "1111",
+            "grade": 100.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 
