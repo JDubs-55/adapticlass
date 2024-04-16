@@ -7,14 +7,13 @@ from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import *
+from .serializers import *
 from datetime import datetime
 from django.utils import timezone
 
 # Create your tests here.
 
 ## USER TESTS
-from .serializers import UserSerializer
-
 class UserTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -151,6 +150,169 @@ class UserTestCase(TestCase):
             "role": "Student"
         }
         response = self.client.post(url, user_data5, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+## COURSE TESTS
+class CourseTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Create a user to use as an instructor
+        self.instructor = User.objects.create(
+            auth_id="123456789",
+            email="instructor@example.com",
+            email_verified=True,
+            auth0_name="Instructor User",
+            display_name="Instructor Display Name",
+            role="instructor"
+        )
+
+    def test_create_course(self):
+        url = '/courses/'
+        course_data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, course_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_course_list(self):
+        url = '/courses/'
+        
+        # Create some courses
+        course_data1 = {
+            "name": "Test Course 1",
+            "description": "Test Description 1",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, course_data1, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        course_data2 = {
+            "name": "Test Course 2",
+            "description": "Test Description 2",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, course_data2, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_get_course_detail(self):
+        url = '/courses/'
+        course_data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, course_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        course = Course.objects.get(name=course_data["name"])
+        url = f'/courses/{course.id}/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], course_data['name'])
+        self.assertEqual(response.data['description'], course_data['description'])
+        self.assertEqual(response.data['status'], course_data['status'])
+        self.assertEqual(response.data['instructor']['auth_id'], self.instructor.auth_id)
+
+    def test_update_course(self):
+        url = '/courses/'
+        course_data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, course_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+        course = Course.objects.get(name=course_data["name"])
+        url = f'/courses/{course.id}/'
+        updated_data = {
+            "name": "Updated Course Name",
+            "description": "Updated Description",
+            "status": "Completed",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/updated_course.jpg"
+        }
+        response = self.client.put(url, updated_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        course.refresh_from_db()
+        self.assertEqual(course.name, updated_data['name'])
+        self.assertEqual(course.description, updated_data['description'])
+        self.assertEqual(course.status, updated_data['status'])
+
+    def test_delete_course(self):
+        course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            status="Current",
+            instructor=self.instructor
+        )
+
+        url = f'/courses/{course.id}/'
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Course.objects.count(), 0)
+
+    def test_invalid_course_creation(self):
+        # Trying to create a course with no name
+        url = '/courses/'
+        data = {
+            "description": "Test Description",
+            "status": "Current",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Trying to create a course with no instructor
+        data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Current",
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Trying to create a course with an invalid instructor ID
+        data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Current",
+            "instructor_id": "987654321",
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Trying to create a course with an invalid status choice
+        data = {
+            "name": "Test Course",
+            "description": "Test Description",
+            "status": "Wrong Status",
+            "instructor_id": self.instructor.id,
+            "course_image": "https://example.com/course.jpg"
+        }
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
