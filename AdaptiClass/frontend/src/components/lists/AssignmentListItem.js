@@ -92,13 +92,13 @@ const SmallItemLabel = styled.p`
 `;
 
 const AssignmentListItem = ({ data, toggleOnInfoPane }) => {
-  const isComplete = data["status"] === "complete";
+  const isComplete = data["is_complete"];
 
   const calcCompletionStatus = (elements) => {
     let complete = 0;
     let total = elements.length;
     for (let element of elements) {
-      if (element["status"] === "complete") {
+      if (element["is_complete"] === true) {
         complete += 1;
       }
     }
@@ -125,7 +125,7 @@ const AssignmentListItem = ({ data, toggleOnInfoPane }) => {
           <CheckboxSquareIcon />
         </SquareCheckboxWrapper>
         <SmallItemLabel>
-          {calcCompletionStatus(data["course_elements"])}
+          {calcCompletionStatus(data["activities"])}
         </SmallItemLabel>
       </JustifyLeftContainer>
       <JustifyRightContainer>

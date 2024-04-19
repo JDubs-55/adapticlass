@@ -2,10 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 const ProgressBarContainer = styled.div`
-  width: 100%;
+  width: calc(100%-40px);
   background-color: #e0e0e0;
   border-radius: 20px;
-  margin-top: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
 `;
 
 const Filler = styled.div`

@@ -35,6 +35,7 @@ const CourseImageContainer = styled.div`
   img {
     width: 36px;
     height: 36px;
+    border-radius: 100%;
   }
 `;
 
@@ -73,11 +74,11 @@ const CourseCard = ({data}) => {
     <CourseCardWrapper>
       <CourseInformationContainer>
         <CourseImageContainer>
-            <img src={data.course_image} alt="Profile" />
+            <img src={data.picture} alt="Profile" />
         </CourseImageContainer>
         <CourseInformationLabelContainer>
           <CourseName>{data.name}</CourseName>
-          <CourseInstructor>{data.instructor}</CourseInstructor>
+          <CourseInstructor>{data.instructor.display_name}</CourseInstructor>
         </CourseInformationLabelContainer>
       </CourseInformationContainer>
       <CourseDescription>{data.description}</CourseDescription>

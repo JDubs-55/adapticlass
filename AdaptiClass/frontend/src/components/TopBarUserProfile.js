@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { useAuth0 } from "@auth0/auth0-react";
 import { DownArrowIcon } from "../assets/Icons";
 import UserProfileDropdown from "./UserProfileDropdown";
+import axios from "axios";
+import { capitalizeFirstLetter } from "../helpers";
 
 // Define styled components
 const ProfileSectionWrapper = styled.div`
@@ -68,6 +70,8 @@ const TopBarUserProfile = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  const [userData, setUserData] = useState(null);
+
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
@@ -87,28 +91,47 @@ const TopBarUserProfile = () => {
   useEffect(() => {
     document.addEventListener("click", handleClickOutside);
 
+    const fetchData = async (userAuthID) => {
+
+      if (userAuthID){
+        try {
+          const response = await axios.get(`http://127.0.0.1:8000/users/${userAuthID}/`);
+          setUserData(response.data);
+
+          //Store the user's id for later use in endpoint calls
+          sessionStorage.setItem('user_id', response.data['id'])
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      
+    };
+
+    // Call the fetch data function when component mounts
+    if (isAuthenticated) {
+      fetchData(user.sub);
+    }
+    
+    
+
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []); // Cleanup the event listener on component unmount
 
-  if (!isAuthenticated) {
-    return null; // Don't render anything if the user is not authenticated
-  }
-
   return (
     <ProfileSectionContainer>
       <ProfileSectionWrapper $show={showDropdown}>
         <ProfileHeader onClick={toggleDropdown} id="dropdown-trigger">
-          <img src={user.picture} alt="Profile" />
-          <Username>{user.name}</Username>
+          <img src={userData ? userData['picture'] : "none"} alt="Profile" />
+          <Username>{userData ? userData['display_name'] : "Username"}</Username>
           <DownArrowIcon />
         </ProfileHeader>
         <DropdownContent $show={showDropdown} ref={dropdownRef}>
           <UserProfileDropdown
-            image={user.picture}
-            name={user.name}
-            role={"Student"}
+            image={userData ? userData['picture'] : "none"}
+            name={userData ? userData['display_name'] : "Username"}
+            role={userData ? capitalizeFirstLetter(userData['role']) : "Role"}
             toggleDropdown={toggleDropdown}
           />
         </DropdownContent>

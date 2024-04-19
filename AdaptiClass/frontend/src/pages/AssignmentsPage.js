@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import AssignmentListContainer from "../components/lists/AssignmentListContainer";
 import AssignmentInfoPane from "../components/AssignmentInfoPane";
 import assignmentData from "../mockRequests/assignmentsBasic.json";
+import axios from "axios";
 
 const Container = styled.div`
   width: 100%;
@@ -38,7 +40,7 @@ const PageHeader = styled.div`
 `;
 
 const ListContainer = styled.div`
-  max-height: calc(100vh - 136px);
+  height: calc(100vh - 136px);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -54,28 +56,73 @@ const InfoPaneContainer = styled.div`
       : "0"}; /* Adjust width based on info pane visibility */
   min-width: ${(props) =>
     props.$showInfoPane
-        ? "500px"
-        : "0"}; /* Adjust width based on info pane visibility */
+      ? "500px"
+      : "0"}; /* Adjust width based on info pane visibility */
   display: ${(props) =>
     props.$showInfoPane
       ? "block"
       : "none"}; /* Show/hide based on info pane visibility */
   border-left: 2px solid #ededed;
-
 `;
 
 const AssignmentPage = () => {
-  const [jsonData, setJsonData] = useState({});
+  let { course_id } = useParams();
+  const [inProgressAssignmentData, setInProgressAssignmentData] = useState([]);
+  const [upcomingAssignmentData, setUpcomingAssignmentData] = useState([]);
+  const [completedAssignmentData, setCompletedAssignmentData] = useState([]);
+  const [courseData, setCourseData] = useState(null);
   const [showInfoPane, setShowInfoPane] = useState(false);
   const [infoPaneData, setInfoPaneData] = useState({});
 
   //Retrieve data from server
   useEffect(() => {
-    const fakeApiCall = async () => {
-      setJsonData(assignmentData);
+    const fetchAssignmentData = async () => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/student/assignments/${course_id}/`,
+          { params: { user_id: sessionStorage.getItem("user_id") } }
+        );
+
+        response.data.forEach((assignment) => {
+          if (assignment["status"] === "In Progress") {
+            //Append to inprogress list.
+            setInProgressAssignmentData([
+              ...inProgressAssignmentData,
+              assignment,
+            ]);
+          } else if (assignment["status"] === "Upcoming") {
+            //Append to upcoming list.
+            setUpcomingAssignmentData([...upcomingAssignmentData, assignment]);
+          } else if (assignment["status"] === "Completed") {
+            //Append to completed list.
+            setCompletedAssignmentData([
+              ...completedAssignmentData,
+              assignment,
+            ]);
+          } else {
+            console.log(
+              `Got unexpected assignment status: ${assignment["status"]}`
+            );
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-    fakeApiCall();
+    const fetchCourseData = async () => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/courses/${course_id}/`
+        );
+        setCourseData(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchCourseData();
+    fetchAssignmentData();
   }, []);
 
   const toggleOnInfoPane = (data) => {
@@ -91,26 +138,26 @@ const AssignmentPage = () => {
     <Container>
       <ColumnWrapper $showInfoPane={showInfoPane}>
         <PageHeader>
-          <h5>{jsonData ? jsonData["title"] : ""}</h5>
+          <h5>{courseData ? courseData["name"] : ""}</h5>
         </PageHeader>
         <ListContainer>
           <AssignmentListContainer
             isLast={false}
             toggleOnInfoPane={toggleOnInfoPane}
             title="In Progress"
-            data={jsonData ? jsonData["in_progress"] || [] : []}
+            data={inProgressAssignmentData}
           />
           <AssignmentListContainer
             isLast={false}
             toggleOnInfoPane={toggleOnInfoPane}
             title="Upcoming"
-            data={jsonData ? jsonData["upcoming"] || [] : []}
+            data={upcomingAssignmentData}
           />
           <AssignmentListContainer
             isLast={true}
             toggleOnInfoPane={toggleOnInfoPane}
             title="Completed"
-            data={jsonData ? jsonData["completed"] || [] : []}
+            data={completedAssignmentData}
           />
         </ListContainer>
       </ColumnWrapper>
@@ -118,8 +165,12 @@ const AssignmentPage = () => {
         <AssignmentInfoPane
           toggleOffInfoPane={toggleOffInfoPane}
           data={infoPaneData}
-          instructorName={jsonData ? jsonData["instructor"] || "" : ""}
-          instructorImage={jsonData ? jsonData["instructor_image"] || "" : ""}
+          instructorName={
+            courseData ? courseData["instructor"]["display_name"] || "" : ""
+          }
+          instructorImage={
+            courseData ? courseData["instructor"]["picture"] || "" : ""
+          }
         />
       </InfoPaneContainer>
     </Container>

@@ -16,7 +16,7 @@ const CourseContent = React.lazy(() => import("./pages/Courses"));
 const FeedbackContent = React.lazy(() => import("./pages/Feedback"));
 const SettingsContent = React.lazy(() => import("./pages/Settings"));
 const AssignmentPage = React.lazy(() => import("./pages/AssignmentsPage"));
-const AssignmentsDetailPage = React.lazy(() => import("./pages/AssignmentsDetailPage"));
+const AssignmentsDetailPage = React.lazy(() => import("./pages/ActivitiesPage"));
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0();
@@ -35,8 +35,8 @@ function App() {
       >
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
-        <Route path={`${PathConstants.COURSES}/:id`} element={<AssignmentPage/>} />
-        <Route path={`${PathConstants.COURSES}/:id/${PathConstants.ASSIGNMENT}/:id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
+        <Route path={`${PathConstants.COURSES}/:course_id`} element={<AssignmentPage/>} />
+        <Route path={`${PathConstants.COURSES}/:course_id/${PathConstants.ASSIGNMENT}/:assignment_id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.SETTINGS} element={<SettingsContent />} />
         <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
@@ -47,8 +47,8 @@ function App() {
       >
         <Route path={PathConstants.HOME} element={<HomeContent />} />
         <Route path={PathConstants.COURSES} element={<CourseContent />} />
-        <Route path={`${PathConstants.COURSES}/:id`} element={<AssignmentPage/>} />
-        <Route path={`${PathConstants.COURSES}/:id/${PathConstants.ASSIGNMENT}/:id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
+        <Route path={`${PathConstants.COURSES}/:course_id`} element={<AssignmentPage/>} />
+        <Route path={`${PathConstants.COURSES}/:course_id/${PathConstants.ASSIGNMENT}/:assignment_id`} element={<WebGazerComponent component={AssignmentsDetailPage}/>}/>
         <Route path={PathConstants.FEEDBACK} element={<FeedbackContent />} />
         <Route path={PathConstants.ERROR} element={<FailedToLoadPage/>}/>
         <Route

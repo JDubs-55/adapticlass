@@ -4,16 +4,18 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 
 const ChatContainer = styled.div`
-  width: 300px;
-  height: calc(100vh - 180px);
-  max-height: 700px;
+  width: 20%;
+  height: calc(100vh - 220px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   border: 1px solid #ccc;
   padding: 20px;
+  padding-top: 0;
   border-radius: 8px;
-  margin-top: 20px;
+  margin: 20px;
+  margin-left: 0;
+  background-color: #fff;
 `;
 
 const ChatTitle = styled.h2`
@@ -23,12 +25,19 @@ const ChatTitle = styled.h2`
   text-align: center; 
 `;
 
+const HorizontalSeparator = styled.div`
+  height: 2px;
+  width: 100%;
+  margin-bottom: 10px;
+  background-color: #e8e9eb;
+`;
+
 const Messages = styled.div`
   flex-grow: 1;
   overflow-y: auto;
   margin-bottom: 10px; 
   &::-webkit-scrollbar {
-    width: 8px; 
+    width: 8px;
     border-radius: 4px;
   }
   &::-webkit-scrollbar-thumb {
@@ -72,8 +81,9 @@ const MessageBubble = styled.div`
 
   &.sent {
     align-self: flex-end;
-    background-color: #4caf50;
+    background-color: #304FFD;
     color: white;
+    margin-left: 5%;
   }
 
   pre {
@@ -136,6 +146,7 @@ const ChatBox = () => {
   return (
     <ChatContainer>
       <ChatTitle>Need help? Let's solve it together</ChatTitle>
+      <HorizontalSeparator/>
       <Messages>
         {messages.map((message, index) => (
           <MessageBubble key={index} className={message.type}>
