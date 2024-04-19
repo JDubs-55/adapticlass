@@ -26,173 +26,6 @@ const ColumnWrapper = styled.div`
   align-items: center;
 `;
 
-const PageHeaderContainer = styled.div`
-  width: 100%;
-  height: 66px;
-
-  border-bottom: 2px solid #ededed;
-  background-color: #fff;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const AssignmentInfoHeaderContainer = styled.div`
-  display: flex;
-  align-items: center;
-  jusitfy-content: flex-start;
-`;
-
-const BackIconContainer = styled.div`
-  display: flex;
-  align-items: center;
-
-  svg {
-    width: 20px;
-    height: auto;
-    fill: #3f434a;
-    margin-left: 30px;
-  }
-
-  svg:hover {
-    cursor: pointer;
-  }
-`;
-
-const AssignmentTitle = styled.div`
-  color: #3f434a;
-  margin-left: 20px;
-  font-size: 20px;
-  font-weight: 500;
-`;
-
-const DropdownContainer = styled.div`
-  position: relative;
-`;
-
-const ActivityDropdown = styled.div`
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 10px;
-  gap: 5px;
-
-  color: #8a9099;
-  font-size: 18px;
-  font-weight: 500;
-`;
-
-const DropdownContent = styled.div`
-  display: ${(props) => (props.$show ? "block" : "none")};
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  z-index: 1000;
-  background-color: white;
-  border: 1px solid #e8e9eb;
-  border-radius: 14px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: max-content;
-`;
-
-const ButtonsWrapper = styled.div`
-  margin: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-`;
-
-const ActivityButton = styled.button`
-  padding: 10px;
-  border: none;
-  cursor: pointer;
-
-  width: 100%;
-  height: 40px;
-  border-radius: 14px;
-  background-color: #fff;
-
-  color: #8a9099;
-  font-size: 18px;
-  font-weight: 500;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  &:hover {
-    background-color: #f8f8f8;
-    color: #3f434a;
-  }
-`;
-
-const ButtonControlsContainer = styled.div`
-  display: flex;
-  gap: 10px;
-`;
-
-const SubmitButton = styled.button`
-  margin: 10px 0;
-  padding: 10px 20px;
-  border: none;
-  background-color: #304ffd;
-  border-radius: 14px;
-  margin-right: 20px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-weight: 500;
-  font-size: 16px;
-  font-family: 'Poppins';
-  text-align: center;
-  color: #fff;
-
-  &.next {
-    border: solid 2px #E8E9EB;
-    color: #8A9099;
-    background-color: #fff;
-
-    &:hover {
-      background-color: #E8E9EB;
-    }
-  }
-
-  &.finish {
-    border: solid 2px #49C96D;
-    color: #fff;
-    background-color: #49C96D;
-
-    &:hover {
-      border: solid 2px #20A144;
-      background-color: #20A144;
-    }
-  }
-  
-
-`;
-
-const WebGazerButton = styled.button`
-  margin: 10px 0;
-  padding: 10px 20px;
-  border: solid 2px #304ffd;
-  background-color: ${(props)=>(props.$webgazerActive ? "#fff" : "#304ffd")};
-  border-radius: 14px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-weight: 500;
-  font-size: 16px;
-  font-family: 'Poppins';
-  text-align: center;
-  color: ${(props)=>(props.$webgazerActive ? "#304ffd" : "#fff")};
-`;
-
 const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
   const navigate = useNavigate();
   
@@ -212,6 +45,15 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
     }
   };
 
+  //Corresponds to activity data state var
+  const updateQuestionData = (index, updatedQuestion) => {
+    setActivityData((prevQuestions) => {
+      const newQuestions = [...prevQuestions];
+      newQuestions[index] = updatedQuestion;
+      return newQuestions;
+    });
+  };
+
   const loadActivity = () => {
     if (currentActivity === null || activityData === null) {
       return <PageLoader/>;
@@ -222,7 +64,7 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
     } else if (currentActivity['type']=== "Exercise") {
       return <ExerciseActivity/>
     } else if (currentActivity['type']=== "Assessment"){
-      return <AssessmentActivity questions={activityData}/>
+      return <AssessmentActivity questions={activityData} currentActivity={currentActivity} updateQuestionData={updateQuestionData}/>
     } else {
       return <FailedToLoadPage/>
     }
@@ -244,14 +86,15 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
   const fetchActivityData = async () => {
     if (currentActivity){
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/questions/${currentActivity['id']}/`);
+        const response = await axios.get(`http://127.0.0.1:8000/userquestions/${currentActivity['id']}/`, { params: { user_id: sessionStorage.getItem("user_id") } });
         setActivityData(response.data);
       } catch (error) {
         console.log(error);
-    }
+      }
     }
   };
 
+  
   useEffect(() => {
     
     fetchAssignmentData();

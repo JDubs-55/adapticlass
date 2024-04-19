@@ -172,11 +172,10 @@ const ActivityHeader = ({
   course_name,
   title,
   activities,
-  currentActivity, 
+  currentActivity,
   toggleCurrentActivity,
-  webgazerActive, 
+  webgazerActive,
   webgazerToggle,
-
 }) => {
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const activityDropdownRef = useRef(null);
@@ -209,15 +208,50 @@ const ActivityHeader = ({
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
+  const allActivitiesComplete = () => {
+    if (!activities){
+        return false;
+    }
+
+    var res = true;
+    for(let i =0; i<activities.length; i++){
+        if (!activities[i]['is_complete']){
+            res = false;
+        }
+    }
+    return res;
+  };
+
+  const getNextIncompleteActivity = () => {
+    if (!activities){
+        return null;
+    }
+
+    for(let i =0; i<activities.length; i++){
+        if (!activities[i]['is_complete'] && activities[i]['id'] != currentActivity['id']){
+            return activities[i];
+        }
+    }
+  };
+
+  const nextClicked = () => {
+    console.log("Clicked");
+    var nextActivity = getNextIncompleteActivity();
+    if (!nextActivity) {
+        console.log("No next activity")
+    }
+    console.log(nextActivity);
+    toggleCurrentActivity(nextActivity);
+  }
+  
   return (
     <PageHeaderContainer>
       <AssignmentInfoHeaderContainer>
         <BackIconContainer onClick={backButtonCallback}>
           <BackArrowIcon />
         </BackIconContainer>
-        <AssignmentTitle>
-          {`${course_name} - ${title}`}
-        </AssignmentTitle>
+        <AssignmentTitle>{`${course_name} - ${title}`}</AssignmentTitle>
         <DropdownContainer>
           <ActivityDropdown
             onClick={toggleActivityDropdown}
@@ -231,20 +265,20 @@ const ActivityHeader = ({
             ref={activityDropdownRef}
           >
             <ButtonsWrapper>
-                {activities.map((activity) => {
-                  if (activity["id"] !== currentActivity["id"]) {
-                    return (
-                      <ActivityButton
-                        key={activity['id']}
-                        onClick={() => toggleCurrentActivity(activity)}
-                      >
-                        {activity["type"]}
-                      </ActivityButton>
-                    );
-                  } else {
-                    return null;
-                  }
-                })}
+              {activities.map((activity) => {
+                if (activity["id"] !== currentActivity["id"]) {
+                  return (
+                    <ActivityButton
+                      key={activity["id"]}
+                      onClick={() => toggleCurrentActivity(activity)}
+                    >
+                      {activity["type"]}
+                    </ActivityButton>
+                  );
+                } else {
+                  return null;
+                }
+              })}
             </ButtonsWrapper>
           </DropdownContent>
         </DropdownContainer>
@@ -253,11 +287,11 @@ const ActivityHeader = ({
         <WebGazerButton
           disabled={!currentActivity}
           $webgazerActive={webgazerActive}
-          onClick={()=>webgazerToggle()}
+          onClick={() => webgazerToggle()}
         >
           Toggle Webgazer
         </WebGazerButton>
-        <SubmitButton disabled={!currentActivity} className="next">Submit</SubmitButton>
+        {allActivitiesComplete() ? <SubmitButton className="finish" onClick={nextClicked}>Finish</SubmitButton> : <SubmitButton className="next" onClick={nextClicked}>Next</SubmitButton>}
       </ButtonControlsContainer>
     </PageHeaderContainer>
   );
