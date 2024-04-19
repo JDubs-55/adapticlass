@@ -22,10 +22,14 @@ urlpatterns = [
     path('activities/', TestActivityListView.as_view()),
     path('activities/<int:assignment_id>/', ActivityListView.as_view()),
     path('activity/<int:activity_id>/', ActivityDetailView.as_view()),
+    path('activitycompleted/', UserActivitySetComplete.as_view()),
     
     path('questions/', TestQuestionListView.as_view()),
     path('questions/<int:activity_id>/', QuestionListView.as_view()),
     path('question/<int:question_id>/', QuestionDetailView.as_view()),
+    path('userquestions/<int:activity_id>/', UserQuestionListView.as_view()),
+    
+
     ##path('courses/<int:pk>/removeusers/', RemoveUsersFromCourseView.as_view()), NOT Needed if we are using enrollments
     ##path('coursegrade/<str:course_name>/', CourseGradeView.as_view()), NOT Needed, attach grade to enrollment. 
     ##path('enrollments/', UserEnrollmentView.as_view()), # Moved/Refactored

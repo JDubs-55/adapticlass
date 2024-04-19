@@ -288,7 +288,6 @@ class UserAssignmentDetailView(APIView):
         if not user_id:
             return Response({"error":'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(assignment_id)
         #Filter for all assignments with given assignment id
         assignment = get_object_or_404(Assignment, pk=assignment_id)
             
@@ -381,6 +380,31 @@ class ActivityDetailView(APIView):
         activity.delete()
         return Response({"message": f"Activity '{activity.title}' deleted"}, status=status.HTTP_204_NO_CONTENT)
 
+class UserActivitySetComplete(APIView):
+    
+    def put(self, request):
+        user_id = request.query_params.get('user_id')
+        activity_id = request.query_params.get('activity_id')
+        grade = request.query_params.get('grade')
+        
+        if not user_id:
+            return Response({"error":'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not activity_id:
+            return Response({"error":'Must provide activity id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user_activity = UserActivity.objects.get(user=user_id, activity=activity_id)
+            user_activity.is_complete = True
+            user_activity.grade = grade
+            user_activity.save()
+            
+            return Response(status=status.HTTP_202_ACCEPTED)
+            
+        except Exception:
+            return Response({"error":"Couldn't find data associated with this activity and user"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
 
 # QUESTION VIEWS
 class TestQuestionListView(APIView):
@@ -425,6 +449,53 @@ class QuestionDetailView(APIView):
         question.delete()
         return Response({"message": f"Activity '{question.question}' deleted"}, status=status.HTTP_204_NO_CONTENT)
 
+class UserQuestionListView(APIView):
+    
+    def get(self, request, activity_id):
+        user_id = request.query_params.get('user_id')
+        serialized_data = []
+        print(user_id)
+        if not user_id:
+            return Response({"error":'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        questions = Question.objects.filter(activity=activity_id)
+        
+        for question in questions:
+            serialized_question = QuestionSerializer(question).data
+            
+            try:
+                user_question = UserQuestion.objects.get(question=question, user=user_id)
+            except UserQuestion.DoesNotExist:
+                return Response({"error":'No user data associated with this question'}, status=status.HTTP_404_NOT_FOUND)
+            
+            if user_question:
+                serialized_question['is_answered'] = user_question.is_answered
+                serialized_question['is_correct'] = user_question.is_correct
+                serialized_question['user_answer'] = user_question.user_answer
+            
+            serialized_data.append(serialized_question)
+            
+        return Response(serialized_data, status=status.HTTP_200_OK)
+    
+    def put(self, request, activity_id):
+        user_id = request.query_params.get('user_id')
+        
+        if not user_id:
+            return Response({'error':'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        for data in request.data:
+            print(data)
+            print(data["id"])
+            user_question = get_object_or_404(UserQuestion, question=data['id'], user=user_id)
+            user_question.is_answered=data['is_answered']
+            user_question.is_correct=data['is_correct']
+            user_question.user_answer=data['user_answer']
+            user_question.save()
+            
+        return Response(status=status.HTTP_202_ACCEPTED)
+        
+        
 
 class ChatbotView(APIView):
     def post(self, request):
