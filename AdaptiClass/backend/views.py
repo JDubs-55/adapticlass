@@ -334,7 +334,29 @@ class UserAssignmentDetailView(APIView):
         serialized_assignment['activities'] = serialized_activities
         
         return Response(serialized_assignment, status=status.HTTP_200_OK)
-    
+
+
+class UserAssignmentSetComplete(APIView):
+    def put(self, request):
+        user_id = request.query_params.get('user_id')
+        assignment_id = request.query_params.get('assignment_id')
+        
+        if not user_id:
+            return Response({"error":'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not assignment_id:
+            return Response({"error":'Must provide assignment id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user_assignment = UserAssignment.objects.get(user=user_id, assignment=assignment_id)
+            user_assignment.is_complete = True
+            user_assignment.save()
+            
+            return Response(status=status.HTTP_202_ACCEPTED)
+            
+        except Exception:
+            return Response({"error":"Couldn't find data associated with this activity and user"}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 # ACTIVITIES VIEWS
 class TestActivityListView(APIView):

@@ -137,6 +137,7 @@ const AssignmentsDetail = ({webgazerToggle, webgazerActive}) => {
         <ActivityHeader 
           backButtonCallback={backButtonCallback}
           course_name={assignmentData['course_name']}
+          assignment_id={assignment_id}
           title={assignmentData['title']}
           activities={assignmentData['activities']}
           currentActivity={currentActivity}

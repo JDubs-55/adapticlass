@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { BackArrowIcon, DownArrowIcon } from "../assets/Icons";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const PageHeaderContainer = styled.div`
   width: 100%;
@@ -170,6 +172,7 @@ const WebGazerButton = styled.button`
 const ActivityHeader = ({
   backButtonCallback,
   course_name,
+  assignment_id,
   title,
   activities,
   currentActivity,
@@ -179,6 +182,7 @@ const ActivityHeader = ({
 }) => {
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const activityDropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   //Activity Dropdown Functions
   const toggleActivityDropdown = () => {
@@ -225,25 +229,42 @@ const ActivityHeader = ({
 
   const getNextIncompleteActivity = () => {
     if (!activities){
-        return null;
+        return currentActivity;
     }
 
-    for(let i =0; i<activities.length; i++){
-        if (!activities[i]['is_complete'] && activities[i]['id'] != currentActivity['id']){
+    for(let i = 0; i<activities.length; i++){
+        if (activities[i]['id'] != currentActivity['id']){
             return activities[i];
         }
     }
+
+    return currentActivity;
   };
 
   const nextClicked = () => {
     console.log("Clicked");
     var nextActivity = getNextIncompleteActivity();
-    if (!nextActivity) {
-        console.log("No next activity")
+    console.log(nextActivity);
+    if (!nextActivity || nextActivity===currentActivity) {
+        console.log("No next activity");
+        return;
     }
     console.log(nextActivity);
     toggleCurrentActivity(nextActivity);
   }
+
+  const assignmentFinished = async () => {
+    try {
+      const response = await axios.put('http://127.0.0.1:8000/assignmentcompleted/', null, { params: { user_id: sessionStorage.getItem("user_id"), assignment_id: assignment_id }});
+      console.log(response);
+
+      if (response.status == 202) {
+        navigate(-1);
+      } 
+    } catch (error) {
+      console.log(error)
+    }
+  };
   
   return (
     <PageHeaderContainer>
@@ -291,7 +312,7 @@ const ActivityHeader = ({
         >
           Toggle Webgazer
         </WebGazerButton>
-        {allActivitiesComplete() ? <SubmitButton className="finish" onClick={nextClicked}>Finish</SubmitButton> : <SubmitButton className="next" onClick={nextClicked}>Next</SubmitButton>}
+        {allActivitiesComplete() ? <SubmitButton className="finish" onClick={assignmentFinished}>Finish</SubmitButton> : <SubmitButton className="next" onClick={nextClicked}>Next</SubmitButton>}
       </ButtonControlsContainer>
     </PageHeaderContainer>
   );

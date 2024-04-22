@@ -18,6 +18,7 @@ urlpatterns = [
     path('assignment/<int:assignment_id>/', AssignmentDetailView.as_view()),
     path('student/assignments/<int:course_id>/', UserAssignmentListView.as_view()),
     path('student/assignment/<int:assignment_id>/', UserAssignmentDetailView.as_view()),
+    path('assignmentcompleted/', UserAssignmentSetComplete.as_view()),
     
     path('activities/', TestActivityListView.as_view()),
     path('activities/<int:assignment_id>/', ActivityListView.as_view()),
