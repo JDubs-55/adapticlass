@@ -4,47 +4,45 @@ import Chart from 'chart.js/auto';
 
 const ChartWrapper = styled.div`
   width: 100%;
-  padding: 20px 0;
+  height: 50%;
 `;
 
 const ChartContainer = styled.div`
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding-top: 10px;
-  padding-right: 20px;
-  padding-bottom: 20px;
-  padding-left: 20px;
-  width: calc(2 * 317px +10pxS);
+  padding: 20px;
+  width: calc(2 * 317px +10px);
   box-sizing: border-box;
+  max-height: 400px;
 `;
 
 
 
-const TimeChart = ({ time }) => { 
+const TimeChart = ({ time, total_time, total_time_prev_week }) => { 
     const chartRef = useRef(null);
   
     useEffect(() => {
-      if (chartRef.current) {
+      if (chartRef.current && time && total_time && total_time_prev_week) {
         const ctx = chartRef.current.getContext('2d');
   
-        const totalCurrentWeek = time.currentWeek.reduce((acc, cur) => acc + cur.timeSpent, 0);
-        const difference = totalCurrentWeek - time.lastWeekTotal;
+        const totalCurrentWeek = total_time;
+        const difference = total_time - total_time_prev_week;
   
-        const maxTimeSpent = Math.max(...time.currentWeek.map(item => item.timeSpent));
-        const maxTimeDay = time.currentWeek.find(item => item.timeSpent === maxTimeSpent).day;
+        const maxTimeSpent = Math.max(...time.map(item => item.time_spent));
+        const maxTimeDay = time.find(item => item.time_spent === maxTimeSpent).day;
   
-        const backgroundColors = time.currentWeek.map(item =>
-          item.day === maxTimeDay ? 'rgba(255, 159, 64)' : 'rgba(54, 162, 235)'
+        const backgroundColors = time.map(item =>
+          item.day === maxTimeDay ? '#FF965D' : '#304FFD'
         );
   
         const myChart = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: time.currentWeek.map(item => item.day),
+            labels: time.map(item => item.day),
             datasets: [{
               label: 'Total Time Spent',
-              data: time.currentWeek.map(item => item.timeSpent),
+              data: time.map(item => item.time_spent),
               backgroundColor: backgroundColors,
               borderRadius: 10, 
               borderWidth: 1
@@ -84,11 +82,15 @@ const TimeChart = ({ time }) => {
                 text: 'Total Time Spent',
                 align: 'start',
                 font: {
-                  size: 18
-                }, padding: {
+                  family: 'Poppins',
+                  size: 24,
+                  weight: 'bold',
+                }, 
+                padding: {
                     top: -40, 
-                    bottom: 40  
-                  }
+                    bottom: 20  
+                },
+                color: '#3f434a'
               },
               tooltip: {
                 enabled: true,
@@ -117,23 +119,34 @@ const TimeChart = ({ time }) => {
               const thisWeekHigher = difference >= 0; 
               
               ctx.save();
-              ctx.font = 'bold 12px Arial';
+              ctx.font = 'bold 15px Poppins';
               ctx.textAlign = 'left';
-          
-              const thisWeekX = chart.chartArea.left + 20;
+
+              const chartArea = chart.chartArea;
+              const chartWidth = chartArea.right - chartArea.left;
+              const chartHeight = chartArea.bottom - chartArea.top;
+
+              const thisWeekText = `This Week: ${Math.floor(totalCurrentWeek/60)}h ${totalCurrentWeek%60}min`;
+              const lastWeekText = `Last Week: ${Math.floor(total_time_prev_week/60)}h ${total_time_prev_week%60}min`;
               
-              const thisWeekTextWidth = ctx.measureText(`This Week: ${Math.floor(totalCurrentWeek/60)}h ${totalCurrentWeek%60}min`).width;
-          
+              const thisWeekTextWidth = ctx.measureText(thisWeekText).width;
+              const lastWeekTextWidth = ctx.measureText(lastWeekText).width;
+
               const gap = 20; 
-              const lastWeekX = thisWeekX + thisWeekTextWidth + gap;
-          
-              const textY = chart.chartArea.bottom + 30; 
-          
-              ctx.fillStyle = thisWeekHigher ? 'green' : 'red';
-              ctx.fillText(`This Week: ${Math.floor(totalCurrentWeek/60)}h ${totalCurrentWeek%60}min`, thisWeekX, textY -260);
+              const totalTextWidth = thisWeekTextWidth + lastWeekTextWidth + gap;
               
-              ctx.fillStyle = thisWeekHigher ? 'red' : 'green';
-              ctx.fillText(`Last Week: ${Math.floor(time.lastWeekTotal/60)}h ${time.lastWeekTotal%60}min`, lastWeekX, textY - 260);
+              const textX = (chartWidth - totalTextWidth);
+
+              const textY = chartArea.top - 28;
+
+          
+              ctx.fillStyle = thisWeekHigher ? '#49C96D' : '#FD7972';
+              ctx.fillText(thisWeekText, textX, textY);
+              
+              ctx.fillStyle = '#3f434a';
+              ctx.fillText(lastWeekText, textX + thisWeekTextWidth + gap, textY);
+
+              ctx.restore();
           
               ctx.restore();
             }

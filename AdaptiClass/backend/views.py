@@ -11,6 +11,10 @@ from . models import *
 from django.shortcuts import get_object_or_404
 import google.generativeai as genai
 import statistics
+import datetime
+from django.db.models.functions import TruncDate
+from django.db.models import Sum
+from django.template.defaultfilters import date as django_date
 
 # Create your views here.
 
@@ -516,8 +520,94 @@ class UserQuestionListView(APIView):
             user_question.save()
             
         return Response(status=status.HTTP_202_ACCEPTED)
+
+
+class HomeView(APIView):
+    
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
         
+        if not user_id:
+            return Response({'error':'Must provide user id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serialized_data = {}
         
+        #Get the course and grade information. 
+        enrollments = Enrollment.objects.filter(user=user_id)
+        serialized_enrollment_data = []
+        for enrollment in enrollments:
+            enrollment_data = {
+                "course_id": enrollment.course.id,
+                "name": enrollment.course.name, 
+                "percentage": enrollment.grade
+            }
+            serialized_enrollment_data.append(enrollment_data)
+            
+        serialized_data['enrollments'] = serialized_enrollment_data
+        
+        #Get the upcoming assignments.
+        serialized_upcoming_assignments = []
+        assignments = Assignment.objects.filter(due_date__gt=datetime.datetime.now()).order_by('due_date')[:15]
+        
+        for assignment in assignments:
+            user_assignment = UserAssignment.objects.get(user=user_id, assignment=assignment.id)
+            
+            assignment_data = {
+                "assignment_id": assignment.id,
+                "course_id": assignment.course.id,
+                "course": assignment.course.name,
+                "name": assignment.title,
+                "due_date": django_date(assignment.due_date, "M j"),
+                "is_complete": user_assignment.is_complete
+            }
+            
+            serialized_upcoming_assignments.append(assignment_data)
+            
+        serialized_data["upcoming"] = serialized_upcoming_assignments
+        
+        # Get all the graph data
+        # Get the datetime for seven days ago
+        seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+
+        # Get all engagement data from the last seven days
+        engagement_data_last_seven_days = EngagementData.objects.filter(start__gte=seven_days_ago)
+
+        # Group the engagement data by day and sum engaged time and total time for each day
+        engagement_data_by_day = engagement_data_last_seven_days.annotate(
+            day=TruncDate('start')
+        ).values('day').annotate(
+            total_engaged_time=Sum('engaged_time'),
+            total_total_time=Sum('total_time')
+        ).order_by('day')
+
+        
+        serialized_engagement_data = []
+        total_time = 0
+        engaged_time = 0
+        # Print or process the engagement data grouped by day
+        for engagement_day in engagement_data_by_day:
+            day = engagement_day['day']
+            day_formatted = django_date(day, "M j")
+            total_time += engagement_day['total_total_time']
+            engaged_time += engagement_day['total_engaged_time']
+            engagement_day_data = {
+                "day": day_formatted,
+                "time_spent": round(engagement_day['total_total_time']/60000,0)
+            }
+            
+            serialized_engagement_data.append(engagement_day_data)
+            
+        serialized_data["time_data"] = serialized_engagement_data
+        
+        serialized_data['total_time'] = round(total_time/60000,0)
+        serialized_data['engaged_time'] = round(engaged_time/60000,0)
+        
+        #Get total time from the previous week. 
+        fourteen_days_ago = datetime.datetime.now() - datetime.timedelta(days=14)
+        total_time_prev_week = EngagementData.objects.filter(start__gte=fourteen_days_ago, start__lt=seven_days_ago).aggregate(prev_week=Sum('total_time'))['prev_week']
+        serialized_data['total_time_prev_week'] = round(total_time_prev_week/60000,0)
+        
+        return Response(serialized_data, status=status.HTTP_200_OK)
 
 class ChatbotView(APIView):
     def post(self, request):

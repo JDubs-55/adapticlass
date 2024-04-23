@@ -1,27 +1,28 @@
 import styled from "styled-components";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
- 
+import { useNavigate } from 'react-router-dom';
+
 const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 317px);
+  width: 100%;
+  display: flex;
   gap: 20px;
   justify-content: flex-start;
 `;
 
 const ClickableSubjectContainer = styled.button`
+  width: 16%;
   background: #fff;
   border-radius: 20px; 
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+
   display: flex;
   justify-content: space-between; 
   align-items: center;
-  padding: 10px 20px; 
+
   height: 120px;
-  width: 317px;
   border: none; 
   cursor: pointer; 
-  width: 100%; 
   margin: 0; 
   outline: none; 
   text-align: left; 
@@ -30,15 +31,13 @@ const ClickableSubjectContainer = styled.button`
   }
 `;
 
-
-const SubjectInfo = styled.div`
-  text-align: left;
-`;
-
 const SubjectTitle = styled.h2`
+  width: 40%;
   font-size: 18px;
-  color: #333;
+  color: #3f434a;
   margin: 0;
+  margin-left: 20px;
+
 `;
 
 const PercentageChange = styled.div`
@@ -50,6 +49,7 @@ const PercentageChange = styled.div`
 const ProgressBarContainer = styled.div`
   width: 80px; 
   height: 80px; 
+  margin-right: 20px;
 `;
 
 
@@ -65,23 +65,19 @@ const getProgressBarColor = (percentage) => {
 
 
 
-const Subject = ({ name, percentage, change }) => {
+const Subject = ({ course_id, name, percentage}) => {
     const progressBarColor = getProgressBarColor(percentage);
-  
+    const navigate = useNavigate();
   
     const handleClick = () => {
-      // For now just log to the console
-      console.log(`Clicked on ${name}`);
+
+      navigate(`/student/courses/${course_id}`);
     };
   
     return (
       <ClickableSubjectContainer onClick={handleClick}>
-        <SubjectInfo>
-          <SubjectTitle>{name}</SubjectTitle>
-          <PercentageChange $isPositive={change >= 0}>
-            {change > 0 ? `↑ ${change}%` : (change < 0 ? `↓ ${Math.abs(change)}%` : '')}
-          </PercentageChange>
-        </SubjectInfo>
+        
+        <SubjectTitle>{name}</SubjectTitle>        
         <ProgressBarContainer>
           <CircularProgressbar
             value={percentage}
@@ -100,14 +96,19 @@ const Subject = ({ name, percentage, change }) => {
 
 
 const SubjectsPage = ({ subjects }) => {
+
+  const getButtonSize = (subjects) => {
+    return `calc(${200/subjects.length}% - ${(subjects.length-1)*20}px)`;
+  };
+
   return (
     <GridContainer>
-      {subjects.map((subject, index) => (
+      {subjects && subjects.map((subject, index) => (
         <Subject
-          key={index}
+          key={subject.course_id}
+          course_id={subject.course_id}
           name={subject.name}
           percentage={subject.percentage}
-          change={subject.change}
         />
       ))}
     </GridContainer>

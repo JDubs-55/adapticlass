@@ -54,7 +54,7 @@ const FeedbackContent = () => {
     const [instructorFeedback, setInstructorFeedback] = useState(null);
 
     useEffect(() => {
-        import('../feedback.json')
+        import('../mockRequests/feedback.json')
             .then(module => {
                 const courseData = module.default.courses; 
                 setCourses(courseData);

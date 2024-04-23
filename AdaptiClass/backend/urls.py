@@ -30,6 +30,8 @@ urlpatterns = [
     path('question/<int:question_id>/', QuestionDetailView.as_view()),
     path('userquestions/<int:activity_id>/', UserQuestionListView.as_view()),
     
+    path('homepagedata/', HomeView.as_view()),
+    
 
     ##path('courses/<int:pk>/removeusers/', RemoveUsersFromCourseView.as_view()), NOT Needed if we are using enrollments
     ##path('coursegrade/<str:course_name>/', CourseGradeView.as_view()), NOT Needed, attach grade to enrollment. 
