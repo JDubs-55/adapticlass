@@ -25,7 +25,7 @@ class Course(models.Model):
     description = models.TextField(blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.CURRENT)
     instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="course", default=1)
-    course_image = models.URLField(max_length=300, blank=True)
+    course_image = models.URLField(max_length=500, blank=True)
 
     def __str__(self):
         return str(self.id) + ' : ' + self.name
@@ -100,7 +100,7 @@ class UserQuestion(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     is_answered = models.BooleanField(default=False)
     is_correct = models.BooleanField(default=False)
-    user_answer = models.TextField(default="")
+    user_answer = models.TextField(default="", blank=True)
     
 
 class Chat(models.Model):

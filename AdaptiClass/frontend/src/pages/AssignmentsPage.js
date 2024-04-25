@@ -67,6 +67,7 @@ const InfoPaneContainer = styled.div`
 
 const AssignmentPage = () => {
   let { course_id } = useParams();
+  const [assignmentData, setAssignmentData] = useState(null)
   const [inProgressAssignmentData, setInProgressAssignmentData] = useState([]);
   const [upcomingAssignmentData, setUpcomingAssignmentData] = useState([]);
   const [completedAssignmentData, setCompletedAssignmentData] = useState([]);
@@ -82,29 +83,7 @@ const AssignmentPage = () => {
           `http://127.0.0.1:8000/student/assignments/${course_id}/`,
           { params: { user_id: sessionStorage.getItem("user_id") } }
         );
-
-        response.data.forEach((assignment) => {
-          if (assignment["status"] === "In Progress") {
-            //Append to inprogress list.
-            setInProgressAssignmentData([
-              ...inProgressAssignmentData,
-              assignment,
-            ]);
-          } else if (assignment["status"] === "Upcoming") {
-            //Append to upcoming list.
-            setUpcomingAssignmentData([...upcomingAssignmentData, assignment]);
-          } else if (assignment["status"] === "Completed") {
-            //Append to completed list.
-            setCompletedAssignmentData([
-              ...completedAssignmentData,
-              assignment,
-            ]);
-          } else {
-            console.log(
-              `Got unexpected assignment status: ${assignment["status"]}`
-            );
-          }
-        });
+        setAssignmentData(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -122,8 +101,41 @@ const AssignmentPage = () => {
     };
 
     fetchCourseData();
+    
     fetchAssignmentData();
+
   }, []);
+
+  useEffect(()=>{
+    if (assignmentData){
+      var inprogress = [];
+      var upcoming = [];
+      var completed = [];
+
+      assignmentData.forEach((assignment) => {
+        if (assignment["status"] === "In Progress") {
+          //Append to inprogress list.
+          inprogress.push(assignment)
+          
+        } else if (assignment["status"] === "Upcoming") {
+          //Append to upcoming list.
+          upcoming.push(assignment)
+          
+        } else if (assignment["status"] === "Completed") {
+          completed.push(assignment)
+        } else {
+          console.log(
+            `Got unexpected assignment status: ${assignment["status"]}`
+          );
+        }
+      });
+
+      setInProgressAssignmentData(inprogress);
+      setUpcomingAssignmentData(upcoming);
+      setCompletedAssignmentData(completed);
+    }
+
+  },[assignmentData]);
 
   const toggleOnInfoPane = (data) => {
     setShowInfoPane(true);

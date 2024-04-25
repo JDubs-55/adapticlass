@@ -31,6 +31,7 @@ urlpatterns = [
     path('userquestions/<int:activity_id>/', UserQuestionListView.as_view()),
     
     path('homepagedata/', HomeView.as_view()),
+    path('feedbackpagedata/<int:course_id>/', FeedbackPageView.as_view()),
     
 
     ##path('courses/<int:pk>/removeusers/', RemoveUsersFromCourseView.as_view()), NOT Needed if we are using enrollments

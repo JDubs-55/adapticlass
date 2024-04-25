@@ -1,6 +1,46 @@
-import React, { useEffect, useRef } from 'react';
+import React, { Component, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import Chart from 'chart.js/auto';
+
+
+const ComponentWrapper = styled.div`
+  width: 60%;
+  background-color: #fff; 
+  border-radius: 10px; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+`;
+
+const ComponentTitle = styled.h5`
+  color: #3f434a;
+  font-family: 'Poppins';
+  font-weight: bold;
+  font-size: 24px;
+  margin: 0;
+  margin-left: 30px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  align-self: flex-start;
+`;
+
+const MainContentWrapper = styled.div`
+  width: 100%;
+  padding-top: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+`;
+
+const MainContent = styled.div`
+  width: 100%;
+`;
 
 const ChartWrapper = styled.div`
   max-width: 100%;
@@ -8,9 +48,6 @@ const ChartWrapper = styled.div`
 `;
 
 const ChartContainer = styled.div`
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   padding: 20px;
   position: relative;
   box-sizing: border-box;
@@ -64,8 +101,8 @@ const TimeFeedback = ({ timeData }) => {
     if (chartRef.current && timeData) {
       const ctx = chartRef.current.getContext('2d');
       const days = Object.keys(timeData);
-      const focusTimes = days.map(day => timeData[day].focus);
-      const notFocusTimes = days.map(day => timeData[day].notFocus);
+      const focusTimes = days.map(day => timeData[day].engaged);
+      const notFocusTimes = days.map(day => timeData[day].disengaged);
 
       const myChart = new Chart(ctx, {
         type: 'bar',
@@ -73,13 +110,13 @@ const TimeFeedback = ({ timeData }) => {
           labels: days,
           datasets: [
             {
-              label: 'Focus Time',
+              label: 'Engaged Time',
               data: focusTimes,
               backgroundColor: 'rgba(54, 162, 235)', // Blue
               borderRadius: 10,
             },
             {
-              label: 'Out-of-Focus Time',
+              label: 'Disengaged Time',
               data: notFocusTimes,
               backgroundColor: 'rgba(255, 159, 64)', // Orange
               borderRadius: 10,
@@ -114,18 +151,6 @@ const TimeFeedback = ({ timeData }) => {
             legend: {
               display: false,
             },
-            title: {
-              display: true,
-              text: 'Total Time Spent This Week',
-              align: 'start',
-              font: {
-                size: 18
-              },
-              padding: {
-                  top: 20, 
-                  bottom: 20  
-              }
-            },
             tooltip: {
               enabled: true,
               callbacks: {
@@ -153,23 +178,46 @@ const TimeFeedback = ({ timeData }) => {
   }, [timeData]);
 
   return (
-    <ChartWrapper>
-      <ChartContainer>
-        <CanvasContainer>
-          <canvas ref={chartRef}></canvas>
-        </CanvasContainer>
-        <Legend>
-          <LegendItem>
-            <LegendColor color="rgba(54, 162, 235)" /> 
-            <LegendText>Focused</LegendText>
-          </LegendItem>
-          <LegendItem>
-            <LegendColor color="rgba(255, 159, 64)" /> 
-            <LegendText>Unfocused</LegendText>
-          </LegendItem>
-        </Legend>
-      </ChartContainer>
-    </ChartWrapper>
+
+    <ComponentWrapper>
+      <ComponentTitle>Time Spent on Course</ComponentTitle>
+      <MainContentWrapper>
+        <MainContent>
+          <ChartContainer>
+          <CanvasContainer>
+            <canvas ref={chartRef}></canvas>
+          </CanvasContainer>
+          <Legend>
+           <LegendItem>
+             <LegendColor color="rgba(54, 162, 235)" /> 
+             <LegendText>Focused</LegendText>
+           </LegendItem>
+           <LegendItem>
+             <LegendColor color="rgba(255, 159, 64)" /> 
+             <LegendText>Unfocused</LegendText>
+           </LegendItem>
+         </Legend>
+         </ChartContainer>
+        </MainContent>
+      </MainContentWrapper>
+    </ComponentWrapper>
+    // <ChartWrapper>
+    //   <ChartContainer>
+    //     <CanvasContainer>
+    //       <canvas ref={chartRef}></canvas>
+    //     </CanvasContainer>
+    //     <Legend>
+    //       <LegendItem>
+    //         <LegendColor color="rgba(54, 162, 235)" /> 
+    //         <LegendText>Focused</LegendText>
+    //       </LegendItem>
+    //       <LegendItem>
+    //         <LegendColor color="rgba(255, 159, 64)" /> 
+    //         <LegendText>Unfocused</LegendText>
+    //       </LegendItem>
+    //     </Legend>
+    //   </ChartContainer>
+    // </ChartWrapper>
   );
 };
 

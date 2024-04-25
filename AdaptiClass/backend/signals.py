@@ -82,7 +82,7 @@ def update_user_assignment_grade(user_activity):
     activities = Activity.objects.filter(assignment=assignment)
     
     # Get the UserActivities associated with the assignment. 
-    user_activities = UserActivity.objects.filter(activity__in=activities, user=user_activity.user)
+    user_activities = UserActivity.objects.filter(activity__in=activities, user=user_activity.user, is_complete=True)
     
     # Calculate the average grade of all activities for the user within the same assignment
     average_grade = user_activities.aggregate(average_grade=Avg('grade'))['average_grade']
@@ -100,7 +100,7 @@ def update_enrollment_grade(user_activity):
     # Get the enrollment object
     enrollment = Enrollment.objects.get(user=user_activity.user, course=course)
     
-    user_assignments = UserAssignment.objects.filter(assignment__in=assignments, user=user_activity.user)
+    user_assignments = UserAssignment.objects.filter(assignment__in=assignments, user=user_activity.user, is_complete=True)
 
     # Calculate the total grade of all assignments for the user within the course
     total_grade = user_assignments.aggregate(average_grade=Avg('grade'))['average_grade']

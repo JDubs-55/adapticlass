@@ -82,7 +82,7 @@ const HomeContent = () => {
           {homeData && <Upcoming tasks={homeData['upcoming']} />}
         </UpcomingWrapper>
         <RightColumn>
-          {homeData && <TimeChart time={homeData['time_data']} total_time={homeData['total_time']} total_time_prev_week={homeData['total_time_prev_week']}/>}
+          {/* {homeData && <TimeChart time={homeData['time_data']} total_time={homeData['total_time']} total_time_prev_week={homeData['total_time_prev_week']}/>} */}
           {homeData &&  <Engagement engaged_time={homeData['engaged_time']} total_time={homeData['total_time']}/>}
         </RightColumn>
       

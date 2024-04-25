@@ -570,7 +570,7 @@ class HomeView(APIView):
         seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
 
         # Get all engagement data from the last seven days
-        engagement_data_last_seven_days = EngagementData.objects.filter(start__gte=seven_days_ago)
+        engagement_data_last_seven_days = EngagementData.objects.filter(user=user_id, start__gte=seven_days_ago)
 
         # Group the engagement data by day and sum engaged time and total time for each day
         engagement_data_by_day = engagement_data_last_seven_days.annotate(
@@ -605,9 +605,99 @@ class HomeView(APIView):
         #Get total time from the previous week. 
         fourteen_days_ago = datetime.datetime.now() - datetime.timedelta(days=14)
         total_time_prev_week = EngagementData.objects.filter(start__gte=fourteen_days_ago, start__lt=seven_days_ago).aggregate(prev_week=Sum('total_time'))['prev_week']
-        serialized_data['total_time_prev_week'] = round(total_time_prev_week/60000,0)
+        if total_time_prev_week:
+            serialized_data['total_time_prev_week'] = round(total_time_prev_week/60000,0)
+        else:
+            serialized_data['total_time_prev_week'] = 0
         
         return Response(serialized_data, status=status.HTTP_200_OK)
+    
+    
+class FeedbackPageView(APIView):
+    
+    def get(self, request, course_id):
+        
+        serialized_data = {}
+        
+        user_id = request.query_params.get("user_id")
+        
+        if not user_id:
+            return Response({'error': 'Must provide user id.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        user_assignments = UserAssignment.objects.filter(user=user_id, assignment__course=course_id, is_complete=True)
+        
+        serialized_grades = []
+        for user_assignment in user_assignments:
+            
+            assessment = UserActivity.objects.filter(user=user_id, activity__assignment=user_assignment.assignment.id, activity__type='Assessment').first()
+            
+            engagement_data = EngagementData.objects.filter(user=user_id, assignment=user_assignment.assignment.id)
+            
+            
+            num_questions = 0
+            num_correct = 0
+            if assessment:
+                user_questions = UserQuestion.objects.filter(user=user_id, question__activity=assessment.id)
+                for question in user_questions:
+                    if question.is_correct:
+                        num_correct +=1
+                    num_questions+=1
+            
+            
+            total_time = 0
+            engaged_time = 0
+            for edata in engagement_data:
+                total_time += edata.total_time
+                engaged_time += edata.engaged_time
+                
+            data = {
+                    "assignment_id": user_assignment.assignment.id,
+                    "course_id": user_assignment.assignment.course.id,
+                    "title": user_assignment.assignment.title,
+                    "grade": user_assignment.grade,
+                    "has_assessment": True, 
+                    "num_questions": num_questions, 
+                    "num_correct": num_correct,
+                    "engagement_score": round(engaged_time/total_time, 0)
+                }
+                
+            serialized_grades.append(data)
+            
+            
+            
+        # Get all the graph data
+        # Get the datetime for seven days ago
+        seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+
+        # Get all engagement data from the last seven days
+        engagement_data_last_seven_days = EngagementData.objects.filter(user=user_id, assignment__course=course_id, start__gte=seven_days_ago)
+
+        # Group the engagement data by day and sum engaged time and total time for each day
+        engagement_data_by_day = engagement_data_last_seven_days.annotate(
+            day=TruncDate('start')
+        ).values('day').annotate(
+            total_engaged_time=Sum('engaged_time'),
+            total_total_time=Sum('total_time')
+        ).order_by('day')
+
+        
+        serialized_engagement_data = {}
+        # Print or process the engagement data grouped by day
+        for engagement_day in engagement_data_by_day:
+            day = engagement_day['day']
+            day_formatted = django_date(day, "M j")
+            serialized_engagement_data[day_formatted] = {
+                "engaged": round(engagement_day['total_engaged_time']/60000,0),
+                "disengaged": round((engagement_day['total_total_time']-engagement_day['total_engaged_time'])/60000,0)
+            }    
+            
+
+        serialized_data['grades'] = serialized_grades
+        serialized_data['engagement_data'] = serialized_engagement_data
+            
+        return Response(serialized_data, status=status.HTTP_200_OK)
+        
 
 class ChatbotView(APIView):
     def post(self, request):
@@ -738,6 +828,7 @@ class EngagementDataAPIView(APIView):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # class CourseGradeView(APIView):
 #     def calculate_and_update_grade(self, user, course):

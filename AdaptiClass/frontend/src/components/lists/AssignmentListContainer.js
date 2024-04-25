@@ -71,10 +71,10 @@ const AssignmentListContainer = ({
         <h5>{title}</h5>
         <p>{`(${numElements})`}</p>
       </TodoHeader>
-      {showItems && data.map((element) => (
+      {showItems && data.map((element, index) => (
         <AssignmentListItem
             toggleOnInfoPane={toggleOnInfoPane}
-            key={element["id"]} 
+            key={index} 
             data={element}
         />
       ))}
